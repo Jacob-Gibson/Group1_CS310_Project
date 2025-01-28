@@ -1,1 +1,1 @@
-# Group1_CS310_Project
+# Group 1 CS310 Project: Patient Portal System
