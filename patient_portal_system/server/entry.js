@@ -1,7 +1,7 @@
 /* 
     This is the entry point for the program, currently not much here
-    If you want a reference for how this project should be structured check this github repo:
-    https://github.com/Parikshit-Hooda/loginapp-gfg/tree/master
+    This project's structure is based on this tutorial, though some extra middleware is added:
+    https://dev.to/techcheck/creating-a-react-node-and-express-app-1ieg
 */
 var express         = require('express'); // using express
 var favicon         = require('serve-favicon'); // the icon in the browser tab
@@ -19,12 +19,16 @@ var exprValidator   = require('express-validator'); // mainly for validating and
 var passport        = require('passport'); // a middleware for authentication
 var localStrat      = require('passport-local').Strategy; // meant for authenticating with user + pass
 var logger          = require('morgan'); // a middleware for logging HTTP requests
+var cors            = require('cors'); // to allow for cross-origin resource sharing (hence, CORS)
 
 const app = express();
 const PORT = 8080; 
 
+app.use(cors());
+app.use(logger('dev'));
+
 app.get('/', (req,res) => {
-    res.send('Test');
+    res.send('Hello, World!');
 });
 
 app.listen(PORT, () => {

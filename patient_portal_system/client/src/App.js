@@ -1,22 +1,19 @@
-import logo from './logo.svg';
+import axios from 'axios';
 import './App.css';
 
+const PORT = 8080;
+
 function App() {
+  const apiCall = () => {
+    axios.get(`http://localhost:${PORT}`).then((data) => {
+      console.log(data.data); // looks weird, but it returns an object with data as the content parameters
+    });
+  }
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <button onClick={apiCall}>Make API Call</button>
       </header>
     </div>
   );
