@@ -2,7 +2,7 @@
   "name": "group1_cs310_project",
   "version": "0.0.1",
   "description": "A Patient Portal System",
-  "main": "app.js",
+  "main": "entry.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
@@ -15,7 +15,7 @@
     "url": "git+https://github.com/Jacob-Gibson/Group1_CS310_Project.git"
   },
   "author": "CS-310 Group 1",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Jacob-Gibson/Group1_CS310_Project/issues"
   },
