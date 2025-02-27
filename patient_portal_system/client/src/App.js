@@ -1,21 +1,28 @@
-import axios from 'axios';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import "./App.css";
+import axios from "axios";
 
 const PORT = 8080;
 
 function App() {
   const apiCall = () => {
     axios.get(`http://localhost:${PORT}`).then((data) => {
-      console.log(data.data); // looks weird, but it returns an object with data as the content parameters
+      console.log(data.data);
     });
-  }
+  };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button onClick={apiCall}>Make API Call</button>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage apiCall={apiCall} />} />
+        {/* Login Page */}
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </Router>
   );
 }
 
