@@ -1,0 +1,87 @@
+@charset "utf-8";
+
+/*base styling*/
+
+html{
+    height: 100%;
+}
+
+body{
+    width:100%;
+    min-height:100%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: lightgray ;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+
+/*header styling */
+header{
+    background-color: rgb(89,77,170);
+    color: white;
+}
+
+
+header h1{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 38px;
+    padding: 1%;
+    text-align: center;
+}
+
+header nav.horizonBlocks ul li{
+    background-color: darkgrey;
+    padding: 15px;
+    float: left;
+    display: block;
+    width: 20%;
+    box-shadow: 2px 2px 7px 1px #1C6EA4;
+}
+
+header nav.horizonBlocks a{
+    display: block;
+    text-align: center;
+}
+
+header nav.horizonBlocks ul li:hover{
+    background-color: slategray;
+}
+
+/*sidebar styling*/
+
+.sidebar{
+    background-color: white;
+    float: left;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 2%;
+    padding: 1%;
+    border: 1px solid rgb(89, 77, 170);
+    border-style: outset;
+}
+
+.sidebar ul li{
+    font-family: 'Times New Roman', Times, serif;
+    display: block;
+    padding: 10%;
+}
+
+.sidebar ul li:hover{
+    background-color: lightblue;
+    border-radius: 50%;
+}
+
+/*footer styling */
+footer{
+    position: fixed;
+    left:0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    color: beige;
+    background-color: rgb(89, 77, 170);
+}
