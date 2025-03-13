@@ -9,43 +9,52 @@ html{
 body{
     width:100%;
     min-height:100%;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: lightgray ;
+    margin:0;
+    background-color: #f4f4f4;
+    font-family: Arial, sans-serif;
 }
 
 * {
     box-sizing: border-box;
 }
 
+/* Base textbox styling */
+
+.blurb{
+    color: white;
+    background-color: rgb(89, 77, 170);
+    text-align: center;
+    font-size: larger;
+    width: 25%;
+    padding: 15px;
+    border: dashed black;
+    border-radius: 15px;
+}
 
 /*header styling */
 header{
     background-color: rgb(89,77,170);
     color: white;
+    position: absolute;
+    top:0px;
+    padding-bottom: 0%;
 }
 
 
 header h1{
     font-family: Arial, Helvetica, sans-serif;
     font-size: 38px;
-    padding: 1%;
     text-align: center;
 }
 
 header nav.horizonBlocks ul li{
     background-color: darkgrey;
-    padding: 15px;
-    float: left;
-    display: block;
-    width: 20%;
+    display: inline;
+    border-radius: 5px;
+    padding: 2px;
     box-shadow: 2px 2px 7px 1px #1C6EA4;
 }
 
-header nav.horizonBlocks a{
-    display: block;
-    text-align: center;
-}
 
 header nav.horizonBlocks ul li:hover{
     background-color: slategray;
@@ -54,25 +63,30 @@ header nav.horizonBlocks ul li:hover{
 /*sidebar styling*/
 
 .sidebar{
-    background-color: white;
-    float: left;
+    position: absolute;
+    width: 12%;
+    height: fit-content;
+    top: 120px;
+    left: 20px;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 2%;
-    padding: 1%;
-    border: 1px solid rgb(89, 77, 170);
-    border-style: outset;
+}
+
+.sidebar ul{
+    padding:0;
 }
 
 .sidebar ul li{
-    font-family: 'Times New Roman', Times, serif;
-    display: block;
-    padding: 10%;
+    list-style-type: none;
+    text-align: center;
 }
 
 .sidebar ul li:hover{
     background-color: lightblue;
-    border-radius: 50%;
+    border-radius: 10px;
 }
 
 /*footer styling */
@@ -81,6 +95,7 @@ footer{
     left:0;
     bottom: 0;
     width: 100%;
+    
     text-align: center;
     color: beige;
     background-color: rgb(89, 77, 170);
