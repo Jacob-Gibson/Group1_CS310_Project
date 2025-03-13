@@ -17,12 +17,12 @@ const connection = mysql.createConnection({
 // Middleware to parse form data
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files (CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 
-// Serve login form
+// Redirect root ("/") to the login page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/public/html', 'login.html'));  // Serve the login page
+    res.sendFile(path.join(publicPath, 'html', 'login.html'));
 });
 
 // Handle login form submission
