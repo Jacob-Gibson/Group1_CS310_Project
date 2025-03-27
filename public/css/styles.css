@@ -1,3 +1,4 @@
+
 /* Global body styles */
 body {
     display: flex;
@@ -67,6 +68,20 @@ header h1 {
     transition: 0.3s;
 }
 
+.go-back{
+    width: 15%;
+    padding: 10px;
+    background: #007bff;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.go-back:hover {
+    background: #0056b3;
+}
 .login-btn:hover {
     background: #0056b3;
 }
