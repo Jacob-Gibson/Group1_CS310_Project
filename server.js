@@ -53,6 +53,8 @@ app.post('/login', (req, res) => {
                         return res.sendFile(path.join(publicPath, 'html', 'docHomepageExample.html'));
                     case 3: // Admin
                         return res.sendFile(path.join(publicPath, 'html', 'adminPageExample.html'));
+                    case 4: //Nurse
+                        return res.sendFile(path.join(publicPath, 'html', 'nurse_home.html'));
                     default:
                         return res.sendFile(path.join(publicPath, 'html', 'landingPage.html')); // Default landing page
                 }
@@ -73,6 +75,9 @@ app.get('/docHomepage', (req, res) => {
 });
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(publicPath, 'html', 'adminPageExample.html'));
+});
+app.get('/nurse',(req,res) => {
+    res.sendFile(path.join(publicPath, 'html', 'nurse_home.html'));
 });
 
 // Serve invalid-info page if login fails
