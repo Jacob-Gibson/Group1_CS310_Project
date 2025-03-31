@@ -25,7 +25,7 @@ async function loadPatients() {
     try {
         const response = await fetch("http://localhost:3000/get_patients", {
             method: "GET",
-            credentials: "include" // Ensures cookies (session) are sent
+            credentials: "include"
         });
 
         if (!response.ok) {
@@ -58,7 +58,6 @@ window.onload = loadPatients;
 </script>
 
 
-
         <form id="preScreeningForm">
             <label for="temperature">Temperature (°F):</label>
             <input type="text" id="temperature" name="temperature" required>
@@ -75,8 +74,8 @@ window.onload = loadPatients;
             <label for="symptoms">Symptoms:</label>
             <input type="text" id="symptoms" name="symptoms" required>
 
-            <label for="medications">Current Medications:</label>
-            <input type="text" id="medications" name="medications" required>
+            <label for="prescriptionID">Prescription ID:</label>
+            <input type="text" id="prescriptionID" name="prescriptionID" required>
 
             <button type="submit">Submit Pre-Screening</button>
         </form>
@@ -92,7 +91,7 @@ window.onload = loadPatients;
         height: document.getElementById("height").value,
         weight: document.getElementById("weight").value,
         symptoms: document.getElementById("symptoms").value,
-        medications: document.getElementById("medications").value
+        prescriptionID: document.getElementById("prescriptionID").value
     };
 
     try {
