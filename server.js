@@ -120,7 +120,7 @@ app.get('/get_patients', (req, res) => {
 
 app.post("/submit_prescreening", (req, res) => {
     // Extract patient data from request body
-    const { patientID, doctorID, temperature, bloodPressure, height, weight, symptoms, medications } = req.body;
+    const { patientID, doctorID, temperature, bloodPressure, height, weight, symptoms, prescriptionID } = req.body;
     
     const nurseID = req.session.nurseID; 
 
@@ -129,11 +129,11 @@ app.post("/submit_prescreening", (req, res) => {
     }
 
     const sql = `
-        INSERT INTO PreScreeningData (PatientID, NurseID, DoctorID, Temperature, BloodPressure, Height, Weight, Symptoms, Prescriptions)
+        INSERT INTO PreScreeningData (PatientID, NurseID, DoctorID, Temperature, BloodPressure, Height, Weight, Symptoms, prescriptionID)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
-    connection.query(sql, [patientID, nurseID, doctorID, temperature, bloodPressure, height, weight, symptoms, medications], (err, result) => {
+    connection.query(sql, [patientID, nurseID, doctorID, temperature, bloodPressure, height, weight, symptoms, prescriptionID], (err, result) => {
         if (err) {
             console.error("Database insert error:", err);
             return res.status(500).json({ error: "Database insert error" });
