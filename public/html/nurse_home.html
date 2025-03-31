@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nurse Home Page</title>
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/landingStyles.css">
-    <link rel="stylesheet" href="../css/exampleStyle.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -35,11 +33,51 @@
     </ul>
 </div>
 
+
 <div class="blurb">
-    <h3>Content will be displayed here.</h3>
-    <h5>List of Current Patients</h5>
-    <h6>Add names somehow</h6>
+    <h3>List of Current Patients</h3>
+    <ul id="patientList">
+        <!-- Patient names will be dynamically inserted here -->
+    </ul>
 </div>
+
+<script>
+async function loadPatientList() {
+    try {
+        const response = await fetch("http://localhost:3000/get_patients", {
+            method: "GET",
+            credentials: "include" // Ensures cookies (session) are sent
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch patients");
+        }
+
+        const patients = await response.json();
+
+        // Get the <ul> element where patients will be listed
+        const patientList = document.getElementById("patientList");
+        patientList.innerHTML = ""; // Clear any existing list items
+
+        if (patients.length === 0) {
+            patientList.innerHTML = "<li>No assigned patients.</li>";
+            return;
+        }
+
+        // Populate the list with patient names
+        patients.forEach(patient => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `${patient.FirstName} ${patient.LastName}`;
+            patientList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error("Error loading patient list:", error);
+    }
+}
+
+// Load patients when the page loads
+window.onload = loadPatientList;
+</script>
 
 <footer>
     <p>Healthcare System © 2025</p>
