@@ -112,6 +112,44 @@ app.get('/nurse', (req, res) => {
     res.sendFile(path.join(publicPath, 'html', 'nurse_home.html'));
 });
 
+// Endpoint to get all users (excluding the current user)
+app.get('/users', (req, res) => {
+    const currentUserID = req.session.userID;
+
+    // Query the database to get all users except the current logged-in user
+    const query = `
+        SELECT UserID, FirstName, LastName FROM Users WHERE UserID != ?;
+    `;
+    connection.query(query, [currentUserID], (err, results) => {
+        if (err) {
+            console.error('Error fetching users:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        res.json(results); // Send the users as a JSON response
+    });
+});
+
+// Endpoint to fetch messages between two users
+app.get('/messages', (req, res) => {
+    const { userID, otherID } = req.query;
+
+    // Query to get messages between the two users
+    const query = `
+        SELECT * FROM Messages
+        WHERE (SenderID = ? AND ReceiverID = ?) OR (SenderID = ? AND ReceiverID = ?)
+        ORDER BY Timestamp;
+    `;
+    connection.query(query, [userID, otherID, otherID, userID], (err, results) => {
+        if (err) {
+            console.error('Error fetching messages:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        res.json(results); // Send the messages as a JSON response
+    });
+});
+
 // Socket.io - Real-time messaging with private rooms
 io.on('connection', (socket) => {
     console.log('New client connected');
