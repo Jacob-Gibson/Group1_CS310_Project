@@ -94,7 +94,7 @@ header nav.horizonBlocks ul li a {
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 15px;
-    background-color: rgb(89, 77, 170);
+    background-color: #f4f4f4;
     word-wrap: break-word; /* Ensure text wraps within the box */
 }
 
@@ -117,13 +117,37 @@ header nav.horizonBlocks ul li a {
 .blurb {
     color: white;
     background-color: rgb(89, 77, 170);
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers items horizontally */
+    justify-content: center; /* Centers items vertically */
     font-size: larger;
     width: 25%;
     padding: 15px;
-    border: dashed black;
+    border: black;
     border-radius: 15px;
+    text-align: center; /* Ensures text inside links is centered */
 }
+
+.blurb ul {
+    padding: 0; /* Removes padding from the <ul> */
+    margin: 0;  /* Removes margin from the <ul> */
+    list-style-type: none; /* Removes default list bullet points */
+}
+
+.blurb h3 {
+    margin: 0; /* Removes margin from <h3> to avoid extra spacing */
+}
+
+.blurb a {
+    color: white; /* Makes the links white */
+    text-decoration: none; /* Optional: Removes underline from links */
+}
+
+.blurb a:hover {
+    color: darkgrey; /* Changes the link color on hover */
+}
+
 
 /* Form container styling */
 .form-container {
@@ -233,7 +257,7 @@ div.navButtons a:hover {
     font-size: larger;
     width: 25%;
     padding: 15px;
-    border: dashed black;
+    border:  black;
     border-radius: 15px;
 }
 
@@ -264,3 +288,4 @@ div.navButtons a:hover {
     background-color: lightblue;
     border-radius: 10px;
 }
+
