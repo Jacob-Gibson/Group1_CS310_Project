@@ -85,64 +85,6 @@ app.get('/invalid-info', (req, res) => {
     res.sendFile(path.join(publicPath, 'html', 'invalid-info.html')); // Serve the invalid-info page
 });
 
-/* 
-1. Get Patients Assigned to a Nurse (Updated with MedicalRecords and name fields):
-   This route will retrieve the list of patients assigned to a specific nurse using the nurse's ID.
-*/
-
-app.get('/get_patients', (req, res) => {
-    const nurseID = req.session.nurseID;
-
-    if (!nurseID) {
-        return res.status(401).json({ error: "Unauthorized - Nurse not logged in" });
-    }
-
-    const query = `
-        SELECT users.UserID, users.FirstName, users.LastName
-        FROM users
-        JOIN medicalrecords ON medicalrecords.PatientID = users.UserID
-        WHERE medicalrecords.NurseID = ?;
-    `;
-
-    connection.query(query, [nurseID], (err, results) => {
-        if (err) {
-            console.error("Error fetching patients:", err);
-            return res.status(500).json({ error: "Database error" });
-        }
-        res.json(results); // Send patients as JSON
-    });
-});
-
-/* 
-2. Submit Pre-Screening Data:
-   This route allows a nurse to submit pre-screening data for a patient.
-*/
-
-app.post("/submit_prescreening", (req, res) => {
-    // Extract patient data from request body
-    const { patientID, doctorID, temperature, bloodPressure, height, weight, symptoms, prescriptionID } = req.body;
-    
-    const nurseID = req.session.nurseID; 
-
-    if (!nurseID) {
-        return res.status(401).json({ error: "Unauthorized - Nurse not logged in" });
-    }
-
-    const sql = `
-        INSERT INTO PreScreeningData (PatientID, NurseID, DoctorID, Temperature, BloodPressure, Height, Weight, Symptoms, prescriptionID)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `;
-
-    connection.query(sql, [patientID, nurseID, doctorID, temperature, bloodPressure, height, weight, symptoms, prescriptionID], (err, result) => {
-        if (err) {
-            console.error("Database insert error:", err);
-            return res.status(500).json({ error: "Database insert error" });
-        }
-        res.json({ message: "Pre-screening data saved successfully!" });
-    });
-});
-
-
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
