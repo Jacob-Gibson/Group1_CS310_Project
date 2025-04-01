@@ -7,7 +7,46 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/exampleStyle.css">
     <link rel="stylesheet" href="../css/prescreenStyles.css">
-
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        .chat-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+        .chat-box {
+            display: none;
+            background: #fff;
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+        }
+        .chat-container.open .chat-box {
+            display: block;
+        }
+        .chat-toggle {
+            background: #007bff;
+            color: white;
+            padding: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .messages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin: 5px 0;
+        }
+        .message-input {
+            display: flex;
+        }
+        .message-input input {
+            flex: 1;
+            margin-right: 5px;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,11 +55,12 @@
     <h1>Healthcare System</h1>
     <nav class="horizonBlocks">
         <ul>
-            <li><a href="#">Messaging System</a></li>
-            <li><a href="#">Account</a></li>
-            <form action="/logout" method="POST" style="display:inline;">
-                <button type="submit">Logout</button>
-            </form>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="calendar.html">My Calendar</a></li>
+            <li><a href="labs.html">Labs</a></li>
+            <li><a href="records.html">My Records</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="./">Logout</a></li>
         </ul>
     </nav>
 </header>
@@ -38,9 +78,76 @@
 
 <h1 class="blurb">Welcome to the Nurse Dashboard</h1>
 
+<!-- Chat Box -->
+<div id="chatBoxContainer" class="chat-container">
+    <button onclick="toggleChat()" class="chat-toggle">Chat</button>
+    <div id="chatBox" class="chat-box">
+        <h4>Private Chat</h4>
+        <select id="userSelect" onchange="loadMessages()"></select>
+        <div id="messages" class="messages"></div>
+        <div class="message-input">
+            <input id="messageInput" type="text" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
 <footer>
     <p>Healthcare System © 2025</p>
 </footer>
 
+<script>
+    const socket = io();
+    let currentUserID = 4; //Logged in UserID
+    let otherUserID = null;
+
+    socket.emit('joinRoom', currentUserID);
+
+    async function loadUsers() {
+        const response = await fetch('/users');
+        const users = await response.json();
+        const userSelect = document.getElementById("userSelect");
+        userSelect.innerHTML = '<option value="" disabled selected>Select a user</option>';
+        users.forEach(user => {
+            const option = document.createElement("option");
+            option.value = user.UserID;
+            option.textContent = `${user.FirstName} ${user.LastName}`;
+            userSelect.appendChild(option);
+        });
+    }
+
+    async function loadMessages() {
+        otherUserID = document.getElementById("userSelect").value;
+        const response = await fetch(`/messages?userID=${currentUserID}&otherID=${otherUserID}`);
+        const messages = await response.json();
+        const messagesContainer = document.getElementById("messages");
+        messagesContainer.innerHTML = "";
+        messages.forEach(message => {
+            const messageElement = document.createElement("div");
+            messageElement.textContent = `${message.SenderID === currentUserID ? 'You' : 'Them'}: ${message.MessageText}`;
+            messagesContainer.appendChild(messageElement);
+        });
+    }
+
+    function sendMessage() {
+        const messageText = document.getElementById("messageInput").value;
+        socket.emit('sendMessage', { senderID: currentUserID, receiverID: otherUserID, messageText });
+        document.getElementById("messageInput").value = '';
+    }
+
+    socket.on('receiveMessage', (messageData) => {
+        const messagesContainer = document.getElementById("messages");
+        const messageElement = document.createElement("div");
+        messageElement.textContent = `${messageData.senderID === currentUserID ? 'You' : 'Them'}: ${messageData.messageText}`;
+        messagesContainer.appendChild(messageElement);
+    });
+
+    function toggleChat() {
+        const chatBox = document.getElementById("chatBoxContainer");
+        chatBox.classList.toggle("open");
+    }
+
+    window.onload = loadUsers;
+</script>
 </body>
 </html>
