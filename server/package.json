@@ -1,0 +1,21 @@
+{
+  "name": "untitled3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "npm install express mysql2 http socket.io path express-session"
+  },
+  "private": true,
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "http": "^0.0.1-security",
+    "mysql2": "^3.14.0",
+    "path": "^0.12.7",
+    "socket.io": "^4.8.1"
+  }
+}
