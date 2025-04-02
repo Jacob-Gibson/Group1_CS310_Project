@@ -89,6 +89,8 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.get('/getCurrentUser', (req, res) => {
+    if (req.session.userID && req.session.roleID) {
         res.json({ userID: req.session.userID, roleID: req.session.roleID });
     } else {
         res.status(401).json({ message: "User not logged in" });
