@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Prescriptions</title>
+    <link rel="stylesheet" href="/css/styles.css">
+
+</head>
+<body>
+    <header>
+        <h1>Electronic Health Management System</h1>
+    </header>
+
+    <h1>My Prescriptions</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Dosage (mg)</th>
+                <th>Frequency (times/day)</th>
+                <th>Date Prescribed</th>
+            </tr>
+        </thead>
+        <tbody id="prescriptionTable"></tbody>
+    </table>
+
+    <p id="noDataMessage" style="display:none; color: red;">No prescriptions found.</p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    fetch('/get-prescriptions')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById("prescriptionTable");
+            const noDataMessage = document.getElementById("noDataMessage");
+
+            if (data.length === 0) {
+                noDataMessage.style.display = "block";
+            } else {
+                data.forEach(prescription => {
+                    // Convert date from "2025-03-15T04:00:00.000Z" to "MM/DD/YYYY"
+                    const formattedDate = new Date(prescription.DatePrescribed)
+                        .toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+                    const row = `<tr>
+                        <td>${prescription.Medication}</td>
+                        <td>${prescription.Dosage}</td>
+                        <td>${prescription.Frequency}</td>
+                        <td>${formattedDate}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById("noDataMessage").textContent = "Failed to load prescriptions.";
+            document.getElementById("noDataMessage").style.display = "block";
+        });
+});
+
+    </script>
+
+    <footer>
+    <p>This webpage is a prototype and does not fully represent the final product</p>
+    </footer>
+</body>
+</html>

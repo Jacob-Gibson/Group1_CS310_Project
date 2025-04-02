@@ -6,7 +6,7 @@ const connection = mysql.createConnection({
     user: 'root',
     password: '', // If you didn’t set a password, leave it empty: ''
     database: 'PatientSystem',
-    port: 3306  // Change to 3307 if using XAMPP and MySQL runs on a different port
+    port: 3307  // Change to 3307 if using XAMPP and MySQL runs on a different port
 });
 
 // Connect to MySQL
