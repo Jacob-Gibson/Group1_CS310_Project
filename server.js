@@ -10,6 +10,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 const port = 3000;
 
+<<<<<<< Updated upstream
 // Create MySQL connection
 const connection = mysql.createConnection({
     host: '127.0.0.1',
@@ -27,6 +28,10 @@ connection.connect(err => {
     }
     console.log('Connected to MySQL');
 });
+=======
+// Import database settings from config, mainly ease of use
+const connection = require('./server/config/db');
+>>>>>>> Stashed changes
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
