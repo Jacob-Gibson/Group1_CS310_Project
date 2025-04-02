@@ -58,7 +58,7 @@
             <li><a href="#">Dashboard</a></li>
             <li><a href="../html/calendar.html">My Calendar</a></li>
             <li><a href="../html/labs.html">Labs</a></li>
-            <li><a href="../html/records.html">Patient Records</a></li>
+            <li><a href="../html/records.html">My Records</a></li>
             <li><a href="./">Logout</a></li>
         </ul>
     </nav>
@@ -97,7 +97,7 @@
 
 <script>
     const socket = io();
-    let currentUserID = 4; //Logged in UserID
+    let currentUserID = 4; // Replace with actual logged-in nurse ID
     let otherUserID = null;
 
     socket.emit('joinRoom', currentUserID);
