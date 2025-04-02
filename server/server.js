@@ -24,7 +24,7 @@ app.use(session({
 }));
 
 // Serve static files from the "public" directory
-const publicPath = path.join(__dirname, 'public');
+const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
 
