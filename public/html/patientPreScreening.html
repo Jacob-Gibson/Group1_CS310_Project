@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Pre-Screening</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/landingStyles.css">
+    <link rel="stylesheet" href="../css/prescreenStyle.css">
     <link rel="stylesheet" href="../css/exampleStyle.css">
-    <link rel="stylesheet" href="../css/prescreenStyles.css">
 </head>
 <body>
 
@@ -14,13 +15,193 @@
     <h1>Patient Pre-Screening</h1>
 </header>
 
-    <a href="nurse_home.html">
-        <button type="button" class="return-home-btn" style="margin-top: 15px;">Return to Dashboard</button>
-    </a>
+<!-- Dropdown to Select Patient -->
+<label for="patientSelect">Select Patient:</label>
+<select id="patientSelect" onchange="fetchPreScreeningData()">
+    <!-- Options will be dynamically populated -->
+</select>
+
+<!-- Table to Display Pre-Screening Data -->
+<table border="1">
+    <thead>
+    <tr>
+        <th>Temperature</th>
+        <th>Blood Pressure</th>
+        <th>Height</th>
+        <th>Weight</th>
+        <th>Symptoms</th>
+        <th>Prescriptions</th>
+        <th>Date</th>
+        <th>Actions</th> <!-- New column for edit/delete buttons -->
+    </tr>
+    </thead>
+    <tbody id="preScreeningTableBody">
+    <!-- Data will be dynamically inserted here -->
+    </tbody>
+</table>
+
+<!-- Edit Form (hidden by default) -->
+<div id="editForm" style="display:none;">
+    <h2>Edit Pre-Screening Data</h2>
+    <form id="editPreScreeningForm">
+        <label for="editTemperature">Temperature:</label>
+        <input type="text" id="editTemperature" name="Temperature" required>
+        <br>
+        <label for="editBloodPressure">Blood Pressure:</label>
+        <input type="text" id="editBloodPressure" name="BloodPressure" required>
+        <br>
+        <label for="editHeight">Height:</label>
+        <input type="text" id="editHeight" name="Height" required>
+        <br>
+        <label for="editWeight">Weight:</label>
+        <input type="text" id="editWeight" name="Weight" required>
+        <br>
+        <label for="editSymptoms">Symptoms:</label>
+        <textarea id="editSymptoms" name="Symptoms" required></textarea>
+        <br>
+        <label for="editPrescriptions">Prescriptions:</label>
+        <textarea id="editPrescriptions" name="Prescriptions" required></textarea>
+        <br>
+        <button type="submit">Update</button>
+        <button type="button" onclick="cancelEdit()">Cancel</button>
+    </form>
+</div>
+
+<a href="nurse_home.html">
+    <button type="button" class="return-home-btn">Return to Dashboard</button>
+</a>
 
 <footer>
     <p>Healthcare System © 2025</p>
 </footer>
+
+<script>
+    let editingPreScreenID = null; // Store the ID of the record being edited
+
+    // Fetch list of patients assigned to the nurse
+    function fetchPatients() {
+        fetch('/getPatientsForNurse') // Endpoint to get assigned patients
+            .then(response => response.json())
+            .then(patients => {
+                const patientSelect = document.getElementById('patientSelect');
+                patientSelect.innerHTML = ""; // Clear previous options
+
+                patients.forEach(patient => {
+                    const option = document.createElement('option');
+                    option.value = patient.PatientID;
+                    option.textContent = `${patient.FirstName} ${patient.LastName}`;
+                    patientSelect.appendChild(option);
+                });
+
+                // Fetch data for the first patient by default
+                if (patients.length > 0) {
+                    fetchPreScreeningData();
+                }
+            })
+            .catch(error => console.error('Error fetching patients:', error));
+    }
+
+    // Fetch and display pre-screening data
+    function fetchPreScreeningData() {
+        const patientID = document.getElementById('patientSelect').value;
+
+        fetch(`/getPreScreening?patientID=${patientID}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('preScreeningTableBody');
+                tableBody.innerHTML = ""; // Clear previous data
+
+                data.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.Temperature}°F</td>
+                        <td>${record.BloodPressure}</td>
+                        <td>${record.Height} cm</td>
+                        <td>${record.Weight} kg</td>
+                        <td>${record.Symptoms}</td>
+                        <td>${record.Prescriptions}</td>
+                        <td>${new Date(record.CreatedAt).toLocaleDateString()}</td>
+                        <td>
+                            <button onclick="editPreScreening(${record.PreScreenID}, '${record.Temperature}', '${record.BloodPressure}', '${record.Height}', '${record.Weight}', '${record.Symptoms}', '${record.Prescriptions}')">Edit</button>
+                            <button onclick="deletePreScreening(${record.PreScreenID})">Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching pre-screening data:', error));
+    }
+
+    // Function to edit pre-screening data
+    function editPreScreening(preScreenID, temperature, bloodPressure, height, weight, symptoms, prescriptions) {
+        editingPreScreenID = preScreenID; // Store the ID of the record being edited
+        document.getElementById('editTemperature').value = temperature;
+        document.getElementById('editBloodPressure').value = bloodPressure;
+        document.getElementById('editHeight').value = height;
+        document.getElementById('editWeight').value = weight;
+        document.getElementById('editSymptoms').value = symptoms;
+        document.getElementById('editPrescriptions').value = prescriptions;
+        document.getElementById('editForm').style.display = 'block'; // Show the edit form
+    }
+
+    // Handle form submission for editing pre-screening data
+    document.getElementById('editPreScreeningForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const updatedData = {
+            Temperature: document.getElementById('editTemperature').value,
+            BloodPressure: document.getElementById('editBloodPressure').value,
+            Height: document.getElementById('editHeight').value,
+            Weight: document.getElementById('editWeight').value,
+            Symptoms: document.getElementById('editSymptoms').value,
+            Prescriptions: document.getElementById('editPrescriptions').value
+        };
+
+        fetch(`/updatePreScreening/${editingPreScreenID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Pre-screening data updated successfully!');
+                    fetchPreScreeningData(); // Refresh the table data
+                    cancelEdit(); // Hide the edit form
+                } else {
+                    alert('Error updating pre-screening data');
+                }
+            })
+            .catch(error => console.error('Error updating pre-screening data:', error));
+    });
+
+    // Cancel editing and hide the form
+    function cancelEdit() {
+        document.getElementById('editForm').style.display = 'none';
+    }
+
+    // Function to delete pre-screening data
+    function deletePreScreening(preScreenID) {
+        if (confirm('Are you sure you want to delete this pre-screening data?')) {
+            fetch(`/deletePreScreening/${preScreenID}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Pre-screening data deleted successfully!');
+                        fetchPreScreeningData(); // Refresh the table data
+                    } else {
+                        alert('Error deleting pre-screening data');
+                    }
+                })
+                .catch(error => console.error('Error deleting pre-screening data:', error));
+        }
+    }
+
+    // Fetch patients on page load
+    window.onload = fetchPatients;
+</script>
 
 </body>
 </html>
