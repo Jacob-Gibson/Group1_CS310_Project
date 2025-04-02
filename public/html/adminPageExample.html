@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,16 +6,191 @@
     <title>Admin Portal</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="../css/exampleStyle.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        /* Chat box adjustments */
+        .chat-container {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            background: white;
+            width: 300px;
+            border: 1px solid #ccc;
+            display: block;
+            z-index: 1000;
+        }
+
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .messages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        .message-input {
+            display: flex;
+            padding: 5px;
+        }
+
+        .message-input input {
+            flex: 1;
+            margin-right: 5px;
+        }
+
+        /* Centered welcome banner */
+        h1.blurb {
+            margin: 0 auto;
+            text-align: center;
+            font-size: 28px;
+            padding: 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 10px;
+            width: fit-content;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 </head>
+
 <body>
 <header>
-    <h1>Prototype Healthcare System</h1>
+    <h1>Prototype Healthcare System - Admin Dashboard</h1>
+    <nav class="horizonBlocks">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="../html/calendar.html">My Calendar</a></li>
+            <li><a href="../html/labs.html">Labs</a></li>
+            <li><a href="../html/records.html">Patient Records</a></li>
+            <li><a href="./">Logout</a></li>
+        </ul>
+    </nav>
 </header>
 
-<h1 class="blurb">Ummmmm. This page doesn't exist yet. Hope you don't need to manage anything</h1>
+<h1 class="blurb">Admin Dashboard - Under Construction</h1>
+
+<!-- Always Visible Chat Box -->
+<div id="chatBoxContainer" class="chat-container">
+    <div class="chat-header">Private Chat</div>
+    <select id="userSelect" onchange="loadMessages()">
+        <option value="" disabled selected>Select a user</option>
+    </select>
+    <div id="messages" class="messages"></div>
+    <div class="message-input">
+        <input id="messageInput" type="text" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
 
 <footer>
     <p>This webpage is a prototype and does not fully represent the final product</p>
 </footer>
+
+<script>
+    const socket = io();
+    let currentUserID = null;
+    let otherUserID = null;
+
+    // Fetch the current user ID from the server
+    async function fetchUserID() {
+        try {
+            const response = await fetch('/getCurrentUser');
+            if (!response.ok) throw new Error('Failed to fetch user ID');
+            const data = await response.json();
+            currentUserID = data.userID;
+            socket.emit('joinRoom', currentUserID);
+            console.log(`Logged in as User ID: ${currentUserID}`);
+        } catch (error) {
+            console.error('Error fetching user ID:', error);
+            alert("Error fetching user ID. Please log in again.");
+        }
+    }
+
+    // Load the list of users for private chat
+    async function loadUsers() {
+        try {
+            const response = await fetch('/users');
+            const users = await response.json();
+            const userSelect = document.getElementById("userSelect");
+            userSelect.innerHTML = '<option value="" disabled selected>Select a user</option>';
+            users.forEach(user => {
+                const option = document.createElement("option");
+                option.value = user.UserID;
+                option.textContent = `${user.FirstName} ${user.LastName}`;
+                userSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading users:', error);
+        }
+    }
+
+    // Load previous messages between the current user and the selected user
+    async function loadMessages() {
+        try {
+            otherUserID = document.getElementById("userSelect").value;
+            const response = await fetch(`/messages?userID=${currentUserID}&otherID=${otherUserID}`);
+            const messages = await response.json();
+            const messagesContainer = document.getElementById("messages");
+            messagesContainer.innerHTML = "";
+            messages.forEach(message => {
+                const formattedTime = new Date(message.Timestamp).toLocaleTimeString();
+                const messageElement = document.createElement("div");
+                messageElement.textContent = `[${formattedTime}] ${message.SenderID === currentUserID ? 'You' : 'Them'}: ${message.MessageText}`;
+                messagesContainer.appendChild(messageElement);
+            });
+        } catch (error) {
+            console.error('Error loading messages:', error);
+        }
+    }
+
+    // Send a new message to the selected user
+    function sendMessage() {
+        const messageText = document.getElementById("messageInput").value;
+        if (!messageText.trim() || !otherUserID) return;
+
+        const messageData = {
+            senderID: currentUserID,
+            receiverID: otherUserID,
+            messageText
+        };
+
+        socket.emit('sendMessage', messageData);
+        displayMessage("You", messageText);
+        document.getElementById("messageInput").value = '';
+    }
+
+    // Display a message in the chat box
+    function displayMessage(sender, messageText) {
+        const messagesContainer = document.getElementById("messages");
+        const messageElement = document.createElement("div");
+        messageElement.textContent = `${sender}: ${messageText}`;
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Listen for incoming messages from the server
+    socket.on('receiveMessage', (messageData) => {
+        const sender = (messageData.senderID === currentUserID) ? "You" : "Them";
+        displayMessage(sender, messageData.messageText);
+    });
+
+    // Fetch the current user ID and user list on page load
+    window.onload = async () => {
+        await fetchUserID();
+        await loadUsers();
+    };
+</script>
+
 </body>
 </html>
