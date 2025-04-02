@@ -140,15 +140,16 @@
         messageElement.textContent = `${messageData.senderID === currentUserID ? 'You' : 'Them'}: ${messageData.messageText}`;
         messagesContainer.appendChild(messageElement);
     });
-<a href="/doctorPrescriptions">
-    <button>Manage Prescriptions</button>
-</a>
+    <a href="/doctorPrescriptions">
+        <button>Manage Prescriptions</button>
+    </a>
 
     function toggleChat() {
         const chatBox = document.getElementById("chatBoxContainer");
         chatBox.classList.toggle("open");
     }
 
+</script>
 
 <footer>
     <p>This webpage is a prototype and does not fully represent the final product</p>
