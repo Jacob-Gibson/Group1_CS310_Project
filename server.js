@@ -89,6 +89,14 @@ app.post('/login', (req, res) => {
     });
 });
 
+        res.json({ userID: req.session.userID, roleID: req.session.roleID });
+    } else {
+        res.status(401).json({ message: "User not logged in" });
+    }
+});
+
+
+
 // Logout route
 app.post('/logout', (req, res) => {
     // Destroy the session to log the user out
@@ -124,28 +132,23 @@ app.get('/nurse', (req, res) => {
 // Endpoint to get all users (excluding the current user)
 app.get('/users', (req, res) => {
     const currentUserID = req.session.userID;
-
-    // Query the database to get all users except the current logged-in user
-    const query = `
-        SELECT UserID, FirstName, LastName FROM Users WHERE UserID != ?;
-    `;
+    const query = `SELECT UserID, FirstName, LastName FROM Users WHERE UserID != ?;`;
     connection.query(query, [currentUserID], (err, results) => {
         if (err) {
             console.error('Error fetching users:', err);
             return res.status(500).send('Internal Server Error');
         }
-
-        res.json(results); // Send the users as a JSON response
+        res.json(results);
     });
 });
+
 
 // Endpoint to fetch messages between two users
 app.get('/messages', (req, res) => {
     const { userID, otherID } = req.query;
-
-    // Query to get messages between the two users
     const query = `
-        SELECT * FROM Messages
+        SELECT SenderID, MessageText, Timestamp
+        FROM Messages
         WHERE (SenderID = ? AND ReceiverID = ?) OR (SenderID = ? AND ReceiverID = ?)
         ORDER BY Timestamp;
     `;
@@ -154,10 +157,10 @@ app.get('/messages', (req, res) => {
             console.error('Error fetching messages:', err);
             return res.status(500).send('Internal Server Error');
         }
-
-        res.json(results); // Send the messages as a JSON response
+        res.json(results);
     });
 });
+
 
 // Fetch pre-screening data for a specific patient
 app.get('/getPreScreening', (req, res) => {
@@ -257,39 +260,6 @@ app.get('/getPatientsForNurse', (req, res) => {
     });
 });
 
-// Socket.io - Real-time messaging with private rooms
-io.on('connection', (socket) => {
-    console.log('New client connected');
-
-    // Join the user's personal room on connection
-    socket.on('joinRoom', (userID) => {
-        socket.join(`user-${userID}`);
-        console.log(`User ${userID} joined their personal room`);
-    });
-
-    // Handle sending a private message
-    socket.on('sendMessage', (messageData) => {
-        const { senderID, receiverID, messageText } = messageData;
-
-        // Save message to the database
-        const query = `
-            INSERT INTO Messages (SenderID, ReceiverID, MessageText)
-            VALUES (?, ?, ?);
-        `;
-        connection.query(query, [senderID, receiverID, messageText], (err) => {
-            if (err) console.error('Error saving message:', err);
-
-            // Emit the message only to the specific room
-            const roomID = `room-${Math.min(senderID, receiverID)}-${Math.max(senderID, receiverID)}`;
-            io.to(roomID).emit('receiveMessage', messageData);
-        });
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
-});
-
 // Routes for prescription handling
 app.post('/add-prescription', (req, res) => {
     const { patientID, doctorID, medication, dosage, frequency, datePrescribed } = req.body;
@@ -326,6 +296,163 @@ app.get('/get-prescriptions', (req, res) => {
         res.json(results);
     });
 });
+// Real-time messaging with private rooms
+io.on('connection', (socket) => {
+    console.log('New client connected');
+
+    // Join the user's personal room on connection
+    socket.on('joinRoom', (userID) => {
+        socket.join(`user-${userID}`);
+        console.log(`User ${userID} joined their personal room`);
+    });
+
+    // Handle sending a private message
+    socket.on('sendMessage', (messageData) => {
+        const { senderID, receiverID, messageText } = messageData;
+
+        // Save message to the database
+        const query = `
+            INSERT INTO Messages (SenderID, ReceiverID, MessageText, Timestamp)
+            VALUES (?, ?, ?, NOW());
+        `;
+        connection.query(query, [senderID, receiverID, messageText], (err) => {
+            if (err) console.error('Error saving message:', err);
+
+            // Emit the message to the specific room for private messaging
+            const roomID = `user-${receiverID}`;
+            io.to(roomID).emit('receiveMessage', messageData);
+        });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+});
+
+
+// Add Medical Record (Restricted to Doctors, Nurses, and Admins)
+app.post('/addRecord', (req, res) => {
+    const { roleID, userID } = req.session;
+
+    // Only allow doctors (2), nurses (4), and admins (3) to add records
+    if (![2, 3, 4].includes(roleID)) {
+        return res.status(403).json({ message: "Unauthorized to add medical records" });
+    }
+
+    const { patientID, diagnosis, prescription, notes } = req.body;
+
+    if (!patientID || !diagnosis || !prescription || !notes) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const query = `
+        INSERT INTO MedicalRecords (PatientID, DoctorID, Diagnosis, Prescription, Notes)
+        VALUES (?, ?, ?, ?, ?);
+    `;
+    connection.query(query, [patientID, userID, diagnosis, prescription, notes], (err) => {
+        if (err) {
+            console.error('Error adding medical record:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.json({ message: "Medical record added successfully!" });
+    });
+});
+
+
+
+// View Medical Records (Restricted by Role)
+app.get('/getRecords', (req, res) => {
+    const { roleID, userID } = req.session;
+    const patientID = req.query.patientID || userID;
+
+    let query;
+    let params;
+
+    if (roleID === 1) { // Patient can view only their own records
+        query = `
+            SELECT mr.RecordID, u.FirstName, u.LastName, mr.DoctorID, mr.Diagnosis, mr.Prescription, mr.Notes
+            FROM MedicalRecords mr
+                     JOIN Users u ON mr.PatientID = u.UserID
+            WHERE mr.PatientID = ?;
+        `;
+        params = [userID];
+    } else if ([2, 3, 4].includes(roleID)) { // Doctor, Nurse, Admin
+        query = `
+            SELECT mr.RecordID, u.FirstName, u.LastName, mr.DoctorID, mr.Diagnosis, mr.Prescription, mr.Notes
+            FROM MedicalRecords mr
+                     JOIN Users u ON mr.PatientID = u.UserID
+            WHERE mr.PatientID = ?;
+        `;
+        params = [patientID];
+    } else {
+        return res.status(403).send('Unauthorized access');
+    }
+
+    connection.query(query, params, (err, results) => {
+        if (err) {
+            console.error('Error fetching records:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.json(results);
+    });
+});
+
+
+
+// Delete Medical Record (Admin Only)
+app.delete('/deleteRecord/:id', (req, res) => {
+    if (req.session.roleID !== 3) {
+        return res.status(403).send('Unauthorized access');
+    }
+    const recordID = req.params.id;
+
+    const query = `DELETE FROM MedicalRecords WHERE RecordID = ?`;
+    connection.query(query, [recordID], (err, result) => {
+        if (err) {
+            console.error('Error deleting record:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.json({ message: "Medical record deleted successfully!" });
+    });
+});
+
+
+
+
+// Endpoint to update an existing medical record
+app.put('/editRecord/:id', (req, res) => {
+    const recordID = req.params.id;
+    const { patientID, doctorID, diagnosis, prescription, notes } = req.body;
+
+    const query = `
+        UPDATE MedicalRecords
+        SET PatientID = ?, DoctorID = ?, Diagnosis = ?, Prescription = ?, Notes = ?
+        WHERE RecordID = ?;
+    `;
+    connection.query(query, [patientID, doctorID, diagnosis, prescription, notes, recordID], (err) => {
+        if (err) {
+            console.error('Error updating record:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.send('Record updated successfully');
+    });
+});
+
+
+
+// Get all patients
+app.get('/patients', (req, res) => {
+    const query = 'SELECT UserID, FirstName, LastName FROM Users WHERE RoleID = 1';
+    connection.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching patients:', err);
+            res.status(500).json({ error: 'Failed to fetch patients' });
+        } else {
+            res.json(results);
+        }
+    });
+});
+
 
 // Start the server
 server.listen(port, () => {

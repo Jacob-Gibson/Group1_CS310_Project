@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Medical Records</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/exampleStyle.css">
+</head>
+<body>
+
+<header>
+    <h1>Healthcare System - My Records</h1>
+    <nav class="horizonBlocks">
+        <ul>
+            <li><a href="../html/patientHomepageExample.html">Dashboard</a></li>
+            <li><a href="../html/calendar.html">My Calendar</a></li>
+            <li><a href="../html/labs.html">Labs</a></li>
+            <li><a href="../html/records.html">My Records</a></li>
+            <li><a href="./">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="form-container">
+    <h2>My Medical Records</h2>
+    <table id="patientMedicalRecords">
+        <thead>
+        <tr>
+            <th>Doctor ID</th>
+            <th>Diagnosis</th>
+            <th>Prescription</th>
+            <th>Notes</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <p id="noRecordsMessage" style="text-align:center;">No saved records.</p>
+</div>
+
+<footer>
+    <p>Healthcare System © 2025</p>
+</footer>
+
+<script>
+    async function loadPatientRecords() {
+        const response = await fetch('/getCurrentUser');
+        const userData = await response.json();
+        const patientID = userData.userID;
+        const recordsRes = await fetch(`/getRecords?patientID=${patientID}`);
+        const records = await recordsRes.json();
+        const tableBody = document.querySelector('#patientMedicalRecords tbody');
+        tableBody.innerHTML = '';
+
+        if (records.length) {
+            records.forEach(record => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = record.DoctorID;
+                row.insertCell().textContent = record.Diagnosis;
+                row.insertCell().textContent = record.Prescription;
+                row.insertCell().textContent = record.Notes;
+            });
+            document.getElementById('noRecordsMessage').style.display = 'none';
+        } else {
+            document.getElementById('noRecordsMessage').style.display = 'block';
+        }
+    }
+
+    window.onload = loadPatientRecords;
+</script>
+
+</body>
+</html>
