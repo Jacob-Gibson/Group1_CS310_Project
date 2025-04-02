@@ -159,6 +159,104 @@ app.get('/messages', (req, res) => {
     });
 });
 
+// Fetch pre-screening data for a specific patient
+app.get('/getPreScreening', (req, res) => {
+    const { patientID } = req.query;
+
+    const query = `
+        SELECT
+            ps.PreScreenID,
+            ps.PatientID,
+            ps.NurseID,
+            ps.DoctorID,
+            ps.Temperature,
+            ps.BloodPressure,
+            ps.Height,
+            ps.Weight,
+            ps.Symptoms,
+            ps.Prescriptions,
+            ps.CreatedAt,
+            u.FirstName AS NurseFirstName,
+            u.LastName AS NurseLastName
+        FROM prescreeningdata ps
+                 JOIN users u ON ps.NurseID = u.UserID
+        WHERE ps.PatientID = ?;
+    `;
+
+    connection.query(query, [patientID], (err, results) => {
+        if (err) {
+            console.error('Error fetching pre-screening data:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        res.json(results); // Send the fetched data as JSON
+    });
+});
+
+// Update prescreening data
+app.put('/updatePreScreening/:id', (req, res) => {
+    const preScreenID = req.params.id;
+    const { Temperature, BloodPressure, Height, Weight, Symptoms, Prescriptions } = req.body;
+
+    const query = `UPDATE prescreeningdata SET 
+                    Temperature = ?, 
+                    BloodPressure = ?, 
+                    Height = ?, 
+                    Weight = ?, 
+                    Symptoms = ?, 
+                    Prescriptions = ?
+                    WHERE PreScreenID = ?`;
+
+    connection.query(query, [Temperature, BloodPressure, Height, Weight, Symptoms, Prescriptions, preScreenID], (err, results) => {
+        if (err) {
+            console.error('Error updating prescreening data:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        res.send('Prescreening data updated successfully.');
+    });
+});
+
+// Delete prescreening data
+app.delete('/deletePreScreening/:id', (req, res) => {
+    const preScreenID = req.params.id;
+
+    const query = `DELETE FROM prescreeningdata WHERE PreScreenID = ?`;
+
+    connection.query(query, [preScreenID], (err, results) => {
+        if (err) {
+            console.error('Error deleting prescreening data:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        res.send('Prescreening data deleted successfully.');
+    });
+});
+
+// Fetch patients assigned to the logged-in nurse
+app.get('/getPatientsForNurse', (req, res) => {
+    const nurseID = req.session.userID; // Nurse ID from session
+
+    const query = `
+        SELECT
+            u.UserID AS PatientID,
+            u.FirstName,
+            u.LastName
+        FROM users u
+        JOIN appointments a ON u.UserID = a.PatientID
+        WHERE a.NurseID = ?;
+    `;
+
+    connection.query(query, [nurseID], (err, results) => {
+        if (err) {
+            console.error('Error fetching patients:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        res.json(results); // Send the patients as JSON
+    });
+});
+
 // Socket.io - Real-time messaging with private rooms
 io.on('connection', (socket) => {
     console.log('New client connected');
