@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,6 +48,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <header>
@@ -123,6 +125,9 @@
         messageElement.textContent = `${messageData.senderID === currentUserID ? 'You' : 'Them'}: ${messageData.messageText}`;
         messagesContainer.appendChild(messageElement);
     });
+<a href="/patientPrescriptions">
+    <button>View Prescriptions</button>
+</a>
 
     function toggleChat() {
         const chatBox = document.getElementById("chatBoxContainer");

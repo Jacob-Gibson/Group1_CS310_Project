@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor - Manage Prescriptions</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Electronic Health Management System</h1>
+    </header>
+    
+    <h2>Add Prescription</h2>
+    <form id="prescriptionForm">
+        <input type="number" name="patientID" placeholder="Patient ID" required>
+        <input type="number" name="doctorID" placeholder="Doctor ID" required>
+        <input type="text" name="medication" placeholder="Medication" required>
+        <input type="number" name="dosage" placeholder="Dosage (mg)" required>
+        <input type="number" name="frequency" placeholder="Frequency (times/day)" required>
+        <input type="date" name="datePrescribed" required>
+        <button type="submit">Submit Prescription</button>
+    </form>
+    <p id="responseMessage"></p>
+    
+    <script>
+    document.getElementById('prescriptionForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const formData = new FormData(this);
+    
+        fetch('/add-prescription', {
+            method: 'POST',
+            body: new URLSearchParams(formData),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('responseMessage').textContent = data.message;
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    });
+    </script>
+    
+    <footer>
+        <p>This webpage is a prototype and does not fully represent the final product</p>
+    </footer>
+
+</body>
+</html>

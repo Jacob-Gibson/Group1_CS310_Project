@@ -19,7 +19,16 @@ const connection = mysql.createConnection({
     port: 3306
 });
 
-// Middleware to parse form data
+// Connect to MySQL
+connection.connect(err => {
+    if (err) {
+        console.error('Database connection failed:', err);
+        return;
+    }
+    console.log('Connected to MySQL');
+});
+
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -34,10 +43,10 @@ app.use(session({
 const publicPath = path.join(__dirname, 'public');
 app.use(express.static(publicPath));
 
-// Redirect root ("/") to the login page
-app.get('/', (req, res) => {
-    res.sendFile(path.join(publicPath, 'html', 'index.html'));
-});
+
+// Routes for serving HTML pages
+app.get('/', (req, res) => res.sendFile(path.join(publicPath, 'html', 'index.html')));
+app.get('/doctorPrescriptions', (req, res) => res.sendFile(path.join(publicPath, 'html', 'doctorPrescriptions.html')));
 
 // Handle login form submission
 app.post('/login', (req, res) => {
@@ -180,6 +189,43 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('Client disconnected');
+    });
+});
+
+// Routes for prescription handling
+app.post('/add-prescription', (req, res) => {
+    const { patientID, doctorID, medication, dosage, frequency, datePrescribed } = req.body;
+
+    if (!patientID || !doctorID || !medication || !dosage || !frequency || !datePrescribed) {
+        return res.status(400).json({ message: "All fields are required!" });
+    }
+
+    const query = `
+        INSERT INTO prescriptions (PatientID, DoctorID, Medication, Dosage, Frequency, DatePrescribed) 
+        VALUES (?, ?, ?, ?, ?, ?)`;
+
+    connection.query(query, [patientID, doctorID, medication, dosage, frequency, datePrescribed], (err, result) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ message: "Error saving prescription." });
+        }
+        res.json({ message: "Prescription added successfully!" });
+    });
+});
+
+// Get prescriptions for a logged-in patient
+app.get('/get-prescriptions', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(403).json({ message: "Unauthorized. Please log in." });
+    }
+
+    const query = "SELECT * FROM prescriptions WHERE PatientID = ?";
+    connection.query(query, [req.session.userId], (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json([]);
+        }
+        res.json(results);
     });
 });
 
