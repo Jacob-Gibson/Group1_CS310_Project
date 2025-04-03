@@ -473,7 +473,7 @@ app.get('/appointments/patient', (req, res) => {
 app.get('/appointments/doctor', (req, res) => {
     const { DoctorID } = req.session.userID;
     try {
-        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND Status <> "Pending" AND Status <> "Finished"', [DoctorID]);
+        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status <> "Pending" AND Status <> "Finished")', [DoctorID]);
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for doctor:', error);
