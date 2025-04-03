@@ -24,13 +24,14 @@ app.use(session({
 }));
 
 // Serve static files from the "public" directory
-const publicPath = path.join(__dirname, 'public');
+const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
-
 
 // Routes for serving HTML pages
 app.get('/', (req, res) => res.sendFile(path.join(publicPath, 'html', 'index.html')));
 app.get('/doctorPrescriptions', (req, res) => res.sendFile(path.join(publicPath, 'html', 'doctorPrescriptions.html')));
+
+
 
 // Handle login form submission
 app.post('/login', (req, res) => {
@@ -437,6 +438,85 @@ app.get('/patients', (req, res) => {
             res.json(results);
         }
     });
+});
+
+// Appointment routes
+app.get('/appointments/patient/request', (req, res) => {
+    const { patientID, apptDate, apptTime, reason } = req.body;
+    const status = 'Pending';  // Force default status for patient submissions
+    const doctorID = null;     // No doctor assigned yet
+  
+    try {
+        const result = connection.query(
+            `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [patientID, doctorID, apptDate, apptTime, reason, status]
+        );
+        res.json({ message: 'Appointment request submitted', ApptID: result.insertId });
+    } catch (error) {
+        console.error('Error creating appointment:', error);
+        res.status(500).json({ error: 'Failed to create appointment' });
+    }
+});
+
+app.get('/appointments/patient', (req, res) => {
+    const { patientID } = req.session.userID;
+    try {
+        const [rows] = connection.query('SELECT * FROM appointments WHERE PatientID = ?', [patientID]);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching appointments for patient:', error);
+        res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+});
+
+app.get('/appointments/doctor', (req, res) => {
+    const { DoctorID } = req.session.userID;
+    try {
+        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status IS NOT NULL OR Status <> "") AND Status <> "Finished"', [DoctorID]);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching appointments for doctor:', error);
+        res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+});
+
+app.get('/appointments/doctor/noStatus', (req, res) => {
+    const { DoctorID } = req.session.userID;
+    try {
+        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status IS NULL OR Status = "")', [DoctorID]); // not sure which one so for now this works
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching appointments for doctor:', error);
+        res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+});
+
+app.get('appointments/:apptID/status', (req, res) => {
+    const { apptID } = req.params.apptID;
+    if(req.session.roleID != 2) {
+        console.error('User is not a doctor!');
+    }
+    const { doctorID } = req.session.userID;
+    const { status } = req.body; // Expecting { status: "Approved" }, { status: "Rejected" }, or { status: "Finished"}
+
+    try {
+        const [result] = connection.query(
+            `UPDATE appointments
+            SET Status = ?, UpdatedAt = NOW(), DoctorID = ?,
+            WHERE ApptID = ?`,
+            [status, doctorID, apptID]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Appointment not found' });
+        }
+
+        res.json({ message: `Appointment status updated to ${status}` });
+    } catch (error) {
+        console.error('Error updating appointment status:', error);
+        res.status(500).json({ error: 'Failed to update appointment status' });
+    }
 });
 
 
