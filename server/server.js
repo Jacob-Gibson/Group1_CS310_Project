@@ -442,14 +442,15 @@ app.get('/patients', (req, res) => {
 
 // Appointment routes
 app.get('/appointments/patient/request', (req, res) => {
-    const { patientID, apptDate, apptTime, reason } = req.body;
+    const { apptDate, apptTime, reason } = req.body;
+    const { patientID } = req.session.userID;
     const status = 'Pending';  // Force default status for patient submissions
     const doctorID = null;     // No doctor assigned yet
   
     try {
         const result = connection.query(
-            `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt, NurseID)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW()), NULL`,
             [patientID, doctorID, apptDate, apptTime, reason, status]
         );
         res.json({ message: 'Appointment request submitted', ApptID: result.insertId });

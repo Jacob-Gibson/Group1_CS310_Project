@@ -65,26 +65,8 @@
             
                 appointmentRequestForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-
-                    let currentUserID = null;
-
-                    // Fetch the current user ID from the server
-                    async function fetchUserID() {
-                        try {
-                            const response = await fetch('/getCurrentUser');
-                            if (!response.ok) throw new Error('Failed to fetch user ID');
-                            const data = await response.json();
-                            currentUserID = data.userID;
-                            socket.emit('joinRoom', currentUserID);
-                            console.log(`Logged in as User ID: ${currentUserID}`);
-                        } catch (error) {
-                            console.error('Error fetching user ID:', error);
-                            alert("Error fetching user ID. Please log in again.");
-                        }
-                    }
                 
                     const appointmentData = {
-                        patientID: fetchUserID(),
                         apptDate: document.getElementById('apptDate').value,
                         apptTime: document.getElementById('apptTime').value,
                         reason: document.getElementById('reason').value
