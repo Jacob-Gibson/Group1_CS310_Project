@@ -442,15 +442,16 @@ app.get('/patients', (req, res) => {
 });
 
 // Appointment routes
-app.get('/appointments/patient/request', (req, res) => {
-    const { patientID, apptDate, apptTime, reason } = req.body;
+app.get('/appointments/patient/request', async (req, res) => {
+    const { apptDate, apptTime, reason } = req.body;
+    const { patientID } = req.session.userID;
     const status = 'Pending';  // Force default status for patient submissions
     const doctorID = null;     // No doctor assigned yet
   
     try {
-        const result = connection.query(
-            `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        const result = await connection.query(
+            `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt, NurseID)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW()), NULL`,
             [patientID, doctorID, apptDate, apptTime, reason, status]
         );
         res.json({ message: 'Appointment request submitted', ApptID: result.insertId });
@@ -460,10 +461,10 @@ app.get('/appointments/patient/request', (req, res) => {
     }
 });
 
-app.get('/appointments/patient', (req, res) => {
+app.get('/appointments/patient', async (req, res) => {
     const { patientID } = req.session.userID;
     try {
-        const [rows] = connection.query('SELECT * FROM appointments WHERE PatientID = ?', [patientID]);
+        const [rows] = await connection.query('SELECT * FROM appointments WHERE PatientID = ?', [patientID]);
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for patient:', error);
@@ -471,10 +472,10 @@ app.get('/appointments/patient', (req, res) => {
     }
 });
 
-app.get('/appointments/doctor', (req, res) => {
+app.get('/appointments/doctor', async (req, res) => {
     const { DoctorID } = req.session.userID;
     try {
-        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status <> "Pending" AND Status <> "Finished")', [DoctorID]);
+        const [rows] = await connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status <> "Pending" AND Status <> "Finished")', [DoctorID]);
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for doctor:', error);
@@ -482,10 +483,10 @@ app.get('/appointments/doctor', (req, res) => {
     }
 });
 
-app.get('/appointments/doctor/noStatus', (req, res) => {
+app.get('/appointments/doctor/noStatus', async (req, res) => {
     const { DoctorID } = req.session.userID;
     try {
-        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND Status = "Pending"', [DoctorID]); // not sure which one so for now this works
+        const [rows] = await connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND Status = "Pending"', [DoctorID]); // not sure which one so for now this works
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for doctor:', error);
@@ -493,7 +494,7 @@ app.get('/appointments/doctor/noStatus', (req, res) => {
     }
 });
 
-app.get('appointments/:apptID/status', (req, res) => {
+app.get('appointments/:apptID/status', async (req, res) => {
     const { apptID } = req.params.apptID;
     if(req.session.roleID != 2) {
         console.error('User is not a doctor!');
@@ -502,7 +503,7 @@ app.get('appointments/:apptID/status', (req, res) => {
     const { status } = req.body; // Expecting { status: "Approved" }, { status: "Rejected" }, or { status: "Finished"}
 
     try {
-        const [result] = connection.query(
+        const [result] = await connection.query(
             `UPDATE appointments
             SET Status = ?, UpdatedAt = NOW(), DoctorID = ?,
             WHERE ApptID = ?`,
