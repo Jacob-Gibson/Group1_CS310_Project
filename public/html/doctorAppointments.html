@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Manage Appointments</title>
+        <link rel="stylesheet" href="../css/styles.css">
+        <link rel="stylesheet" href="../css/exampleStyle.css">
+        <style>
+            /* Global body styles */
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                min-height: 100vh;
+                display: block;
+            }
+    
+            /* Header styles */
+            header {
+                width: 100%;
+                background-color: rgb(89, 77, 170);
+                color: white;
+                padding: 10px 0;
+                text-align: center;
+            }
+    
+            header h1 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 38px;
+                margin: 0;
+            }
+            
+            /* Basic styling for table and form */
+            table {
+                border-collapse: collapse;
+                width: 80%;
+                margin: 20px auto;
+            }
+            th, td {
+                padding: 8px 12px;
+                border: 1px solid #ccc;
+            }
+            form {
+                width: 300px;
+                margin: 20px auto;
+                display: flex;
+                flex-direction: column;
+            }
+            label {
+                margin-bottom: 5px;
+            }
+            input, select, button {
+                margin-bottom: 10px;
+            }
+            .action-btn {
+                padding: 6px 10px;
+                margin-right: 5px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .approve {
+                background-color: #28a745;
+                color: white;
+            }
+            .deny {
+                background-color: #dc3545;
+                color: white;
+            }
+            .message { text-align: center; margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <header>
+          <h1>Manage Appointments</h1>
+        </header>
+        <main>
+            <table id="appointmentsTable">
+                <thead>
+                <tr>
+                    <th>Appointment ID</th>
+                    <th>Patient ID</th>
+                    <th>Doctor ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Appointment rows will be inserted here -->
+                </tbody>
+            </table>
+            <div class="message" id="message"></div>
+        </main>
+        
+        <script>
+            // Load appointments for doctor view (e.g., all appointments assigned)
+            async function loadAppointments() {
+                try {
+                    const response = await fetch('/appointments/doctor');
+                    if (!response.ok) throw new Error('Failed to fetch appointments');
+                    const appointments = await response.json();
+                    const tableBody = document.querySelector("#appointmentsTable tbody");
+                    tableBody.innerHTML = "";
+                
+                    if (appointments.length === 0) {
+                        document.getElementById("message").textContent = "No appointments found.";
+                    } else {
+                        document.getElementById("message").textContent = "";
+                        appointments.forEach(appt => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${appt.ApptID}</td>
+                            <td>${appt.PatientID}</td>
+                            <td>${appt.DoctorID}</td>
+                            <td>${appt.ApptDate}</td>
+                            <td>${appt.ApptTime}</td>
+                            <td>${appt.Reason}</td>
+                            <td>${appt.Status}</td>
+                            <td>
+                            <button class="action-btn finished" onclick="updateStatus(${appt.ApptID}, 'Finished')">Confirm</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading appointments:", error);
+                    document.getElementById("message").textContent = "Error loading appointments.";
+                }
+            }
+            
+            // Update appointment status (confirm or deny)
+            async function updateStatus(apptID, newStatus) {
+                try {
+                const response = await fetch(`/appointments/${apptID}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (!response.ok) throw new Error('Failed to update status');
+                    alert(`Appointment ${apptID} ${newStatus}`);
+                    loadAppointments();
+                } catch (error) {
+                    console.error("Error updating appointment status:", error);
+                    alert("Error updating appointment status.");
+                }
+            }
+            
+            // Initialize the page by loading appointments
+            window.onload = loadAppointments;
+        </script>
+    </body>
+</html>
