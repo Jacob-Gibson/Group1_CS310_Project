@@ -269,12 +269,12 @@ app.post('/add-prescription', (req, res) => {
 
 // Get prescriptions for a logged-in patient
 app.get('/get-prescriptions', (req, res) => {
-    if (!req.session.userId) {
+    if (!req.session.userID) {  // Change from userId to userID
         return res.status(403).json({ message: "Unauthorized. Please log in." });
     }
 
     const query = "SELECT * FROM prescriptions WHERE PatientID = ?";
-    connection.query(query, [req.session.userId], (err, results) => {
+    connection.query(query, [req.session.userID], (err, results) => {  // Use userID
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json([]);
@@ -282,6 +282,7 @@ app.get('/get-prescriptions', (req, res) => {
         res.json(results);
     });
 });
+
 // Real-time messaging with private rooms
 io.on('connection', (socket) => {
     console.log('New client connected');
