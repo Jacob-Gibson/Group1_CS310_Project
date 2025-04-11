@@ -442,10 +442,14 @@ app.get('/patients', (req, res) => {
 
 // Appointment routes
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.get('/appointments/patient/request', (req, res) => {
     const { patientID, apptDate, apptTime, reason } = req.body;
 =======
 app.get('/appointments/patient/request', async (req, res) => {
+=======
+app.get('/appointments/patient/request', (req, res) => {
+>>>>>>> parent of d074413 (Maybe a fix)
     const { apptDate, apptTime, reason } = req.body;
     const { patientID } = req.session.userID;
 >>>>>>> parent of c548214 (Forgor to update)
@@ -454,11 +458,15 @@ app.get('/appointments/patient/request', async (req, res) => {
   
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
         const result = connection.query(
             `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt)
             VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
 =======
         const result = await connection.query(
+=======
+        const result = connection.query(
+>>>>>>> parent of d074413 (Maybe a fix)
             `INSERT INTO appointments (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt, NurseID)
             VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW()), NULL`,
 >>>>>>> parent of c548214 (Forgor to update)
@@ -472,6 +480,7 @@ app.get('/appointments/patient/request', async (req, res) => {
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.get('/appointments/patient', (req, res) => {
     const { patientID } = req.session.userID;
     try {
@@ -482,6 +491,12 @@ app.get('/appointments/patient', async (req, res) => {
     try {
         const [rows] = await connection.query('SELECT * FROM appointments WHERE PatientID = ?', [patientID]);
 >>>>>>> parent of c548214 (Forgor to update)
+=======
+app.get('/appointments/patient', (req, res) => {
+    const { patientID } = req.session.userID;
+    try {
+        const [rows] = connection.query('SELECT * FROM appointments WHERE PatientID = ?', [patientID]);
+>>>>>>> parent of d074413 (Maybe a fix)
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for patient:', error);
@@ -489,6 +504,7 @@ app.get('/appointments/patient', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 app.get('/appointments/doctor', (req, res) => {
     const { DoctorID } = req.session.userID;
@@ -500,6 +516,12 @@ app.get('/appointments/doctor', async (req, res) => {
     try {
         const [rows] = await connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status <> "Pending" AND Status <> "Finished")', [DoctorID]);
 >>>>>>> parent of c548214 (Forgor to update)
+=======
+app.get('/appointments/doctor', (req, res) => {
+    const { DoctorID } = req.session.userID;
+    try {
+        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND (Status <> "Pending" AND Status <> "Finished")', [DoctorID]);
+>>>>>>> parent of d074413 (Maybe a fix)
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for doctor:', error);
@@ -507,6 +529,7 @@ app.get('/appointments/doctor', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 app.get('/appointments/doctor/noStatus', (req, res) => {
     const { DoctorID } = req.session.userID;
@@ -518,6 +541,12 @@ app.get('/appointments/doctor/noStatus', async (req, res) => {
     try {
         const [rows] = await connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND Status = "Pending"', [DoctorID]); // not sure which one so for now this works
 >>>>>>> parent of c548214 (Forgor to update)
+=======
+app.get('/appointments/doctor/noStatus', (req, res) => {
+    const { DoctorID } = req.session.userID;
+    try {
+        const [rows] = connection.query('SELECT * FROM appointments WHERE DoctorID = ? AND Status = "Pending"', [DoctorID]); // not sure which one so for now this works
+>>>>>>> parent of d074413 (Maybe a fix)
         res.json(rows);
     } catch (error) {
         console.error('Error fetching appointments for doctor:', error);
@@ -526,10 +555,14 @@ app.get('/appointments/doctor/noStatus', async (req, res) => {
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.get('appointments/:apptID/status', (req, res) => {
 =======
 app.get('appointments/:apptID/status', async (req, res) => {
 >>>>>>> parent of c548214 (Forgor to update)
+=======
+app.get('appointments/:apptID/status', (req, res) => {
+>>>>>>> parent of d074413 (Maybe a fix)
     const { apptID } = req.params.apptID;
     if(req.session.roleID != 2) {
         console.error('User is not a doctor!');
@@ -539,10 +572,14 @@ app.get('appointments/:apptID/status', async (req, res) => {
 
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
         const [result] = connection.query(
 =======
         const [result] = await connection.query(
 >>>>>>> parent of c548214 (Forgor to update)
+=======
+        const [result] = connection.query(
+>>>>>>> parent of d074413 (Maybe a fix)
             `UPDATE appointments
             SET Status = ?, UpdatedAt = NOW(), DoctorID = ?,
             WHERE ApptID = ?`,
