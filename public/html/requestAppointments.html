@@ -6,12 +6,6 @@
         <link rel="stylesheet" href="../css/styles.css">
         <link rel="stylesheet" href="../css/exampleStyle.css">
         <style>
-            main {
-                align-items: center;
-                justify-content: center;
-                display: block;
-                height: 100%;
-            }
             /* Basic styling for table and form */
             table {
                 border-collapse: collapse;
@@ -37,6 +31,7 @@
         </style>
     </head>
     <body>
+
         <header>
             <h1>Healthcare System - Request Appointment</h1>
             <nav class="horizonBlocks">
@@ -49,58 +44,78 @@
                 </ul>
             </nav>
         </header>
-        <form id="appointmentRequestForm">
-            <h2>Appointment Request</h2>
-        
-            <label for="apptDate">Appointment Date</label>
-            <input type="date" id="apptDate" name="apptDate" required />
-        
-            <label for="apptTime">Appointment Time</label>
-            <input type="time" id="apptTime" name="apptTime" required />
-        
-            <label for="reason">Reason</label>
-            <input type="text" id="reason" name="reason" required />
-        
-            <button type="submit">Submit Request</button>
-        </form>
-        <script>
-            const appointmentRequestForm = document.getElementById('appointmentRequestForm');
-        
-            appointmentRequestForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
+        <main>
+            <form id="appointmentRequestForm">
+                <h2>Appointment Request</h2>
             
-                const appointmentData = {
-                    apptDate: document.getElementById('apptDate').value,
-                    apptTime: document.getElementById('apptTime').value,
-                    reason: document.getElementById('reason').value
-                    // status will be set to "Pending" automatically on the backend
-                };
-
-                const today = new Date().toISOString().split("T")[0];
-                if(apptDate < today) {
-                    alert("The appointment date cannot be in the past.");
-                    return;
-                } else if (appointmentData.apptTime < "08:00" || appointmentData.apptTime > "20:00") {
-                    alert(`Appointment time must be between 8:00 AM and 8:00 AM, you put: ${apptTime}`);
-                }
-
-                try {
-                    const response = await fetch('/appointments/patient/request', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(appointmentData)
-                    });
+                <label for="apptDate">Appointment Date</label>
+                <input type="date" id="apptDate" name="apptDate" required />
             
-                    if (!response.ok) {
-                        throw new Error('Failed to submit appointment request');
+                <label for="apptTime">Appointment Time</label>
+                <input type="time" id="apptTime" name="apptTime" required />
+            
+                <label for="reason">Reason</label>
+                <input type="text" id="reason" name="reason" required />
+            
+                <button type="submit">Submit Request</button>
+            </form>
+          </main>
+          <script>
+                const appointmentRequestForm = document.getElementById('appointmentRequestForm');
+            
+                appointmentRequestForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    let currentUserID = null;
+
+                    // Fetch the current user ID from the server
+                    async function fetchUserID() {
+                        try {
+                            const response = await fetch('/getCurrentUser');
+                            if (!response.ok) throw new Error('Failed to fetch user ID');
+                            const data = await response.json();
+                            currentUserID = data.userID;
+                            socket.emit('joinRoom', currentUserID);
+                            console.log(`Logged in as User ID: ${currentUserID}`);
+                        } catch (error) {
+                            console.error('Error fetching user ID:', error);
+                            alert("Error fetching user ID. Please log in again.");
+                        }
                     }
-                    
-                    alert('Your appointment request has been submitted and is pending approval.');
-                    appointmentRequestForm.reset();
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            });
-        </script>
+                
+                    const appointmentData = {
+                        patientID: fetchUserID(),
+                        apptDate: document.getElementById('apptDate').value,
+                        apptTime: document.getElementById('apptTime').value,
+                        reason: document.getElementById('reason').value
+                        // status will be set to "Pending" automatically on the backend
+                    };
+
+                    const today = new Date().toISOString().split("T")[0];
+                    if(apptDate < today) {
+                        alert("The appointment date cannot be in the past.");
+                        return;
+                    } else if (appointmentData.apptTime < "08:00" || appointmentData.apptTime > "20:00") {
+                        alert(`Appointment time must be between 8:00 AM and 8:00 AM, you put: ${apptTime}`);
+                    }
+
+                    try {
+                        const response = await fetch('/appointments/patient/request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(appointmentData)
+                        });
+                
+                        if (!response.ok) {
+                            throw new Error('Failed to submit appointment request');
+                        }
+                        
+                        alert('Your appointment request has been submitted and is pending approval.');
+                        appointmentRequestForm.reset();
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+          </script>
     </body>
 </html>
