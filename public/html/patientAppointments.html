@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> parent of c548214 (Forgor to update)
     <head>
         <meta charset="UTF-8">
         <title>Manage Appointments</title>
@@ -60,7 +57,6 @@
         </style>
     </head>
     <body>
-<<<<<<< HEAD
 
         <header>
             <h1>Healthcare System - Patient Appointments</h1>
@@ -293,78 +289,4 @@
   </script>
 </body>
 >>>>>>> parent of c81ea36 (Merge branch 'prototype' into Appointments)
-=======
-
-        <header>
-            <h1>Healthcare System - Patient Appointments</h1>
-            <nav class="horizonBlocks">
-                <ul>
-                    <li><a href="../html/patientHomepageExample.html">Dashboard</a></li>
-                    <li><a href="../html/calendar.html">My Calendar</a></li>
-                    <li><a href="../html/labs.html">Labs</a></li>
-                    <li><a href="../html/records.html">My Records</a></li>
-                    <li><a href="../html/patientAppointments.html">Appointments</a></li>
-                    <li><a href="./">Logout</a></li>
-                </ul>
-            </nav>
-        </header>
-        <main>
-            <!-- This is just plain text for now, not making it fancy since it's a prototype -->
-            <div class="btn-container">
-                <a class="btn" href="./requestAppointments.html">Create Appointment</a>
-            </div>
-            <table id="appointmentsTable">
-                <thead>
-                    <tr>
-                        <th>Appointment ID</th>
-                        <th>Doctor ID</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Appointments will be populated here by script -->
-                </tbody>
-            </table>
-          </main>
-          <script>
-            // Fetch and display appointments for the current patient
-            async function loadAppointments() {
-                try {
-                    const response = await fetch('/appointments/patient');
-                    if (!response.ok) throw new Error('Failed to fetch appointments');
-            
-                    const appointments = await response.json();
-                    const tableBody = document.querySelector("#appointmentsTable tbody");
-                    tableBody.innerHTML = ""; // Clear any previous rows
-            
-                    if (appointments.length === 0) {
-                        document.getElementById("message").textContent = "No appointments found.";
-                    } else {
-                        document.getElementById("message").textContent = "";
-                        appointments.forEach(appt => {
-                            const row = document.createElement("tr");
-                            row.innerHTML = `
-                            <td>${appt.ApptID}</td>
-                            <td>${appt.DoctorID ? appt.DoctorID : 'Not Assigned'}</td>
-                            <td>${appt.ApptDate}</td>
-                            <td>${appt.ApptTime}</td>
-                            <td>${appt.Reason}</td>
-                            <td>${appt.Status}</td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error loading appointments:", error);
-                }
-            }
-          
-            // Initialize the page: load appointments
-            window.onload = loadAppointments;
-          </script>
-    </body>
->>>>>>> parent of c548214 (Forgor to update)
 </html>

@@ -65,7 +65,6 @@
             
                 appointmentRequestForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-<<<<<<< HEAD
 
                     let currentUserID = null;
 
@@ -99,23 +98,6 @@
                     } else if (appointmentData.apptTime < "08:00" || appointmentData.apptTime > "20:00") {
                         alert(`Appointment time must be between 8:00 AM and 8:00 AM, you put: ${apptTime}`);
                     }
-=======
-                
-                    const appointmentData = {
-                        apptDate: document.getElementById('apptDate').value,
-                        apptTime: document.getElementById('apptTime').value,
-                        reason: document.getElementById('reason').value
-                        // status will be set to "Pending" automatically on the backend
-                    };
-
-                    const today = new Date().toISOString().split("T")[0];
-                    if(apptDate < today) {
-                        alert("The appointment date cannot be in the past.");
-                        return;
-                    } else if (appointmentData.apptTime < "08:00" || appointmentData.apptTime > "20:00") {
-                        alert(`Appointment time must be between 8:00 AM and 8:00 AM, you put: ${apptTime}`);
-                    }
->>>>>>> parent of c548214 (Forgor to update)
 
                     try {
                         const response = await fetch('/appointments/patient/request', {
