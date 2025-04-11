@@ -1,156 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Manage Appointments</title>
-        <link rel="stylesheet" href="../css/styles.css">
-        <link rel="stylesheet" href="../css/exampleStyle.css">
-        <style>
-            /* Global body styles */
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                min-height: 100vh;
-                display: block;
-            }
-    
-            /* Header styles */
-            header {
-                width: 100%;
-                background-color: rgb(89, 77, 170);
-                color: white;
-                padding: 10px 0;
-                text-align: center;
-            }
-    
-            header h1 {
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 38px;
-                margin: 0;
-            }
-            
-            /* Basic styling for table and form */
-            table {
-                border-collapse: collapse;
-                width: 80%;
-                margin: 20px auto;
-            }
-            th, td {
-                padding: 8px 12px;
-                border: 1px solid #ccc;
-            }
-            form {
-                width: 300px;
-                margin: 20px auto;
-                display: flex;
-                flex-direction: column;
-            }
-            label {
-                margin-bottom: 5px;
-            }
-            input, select, button {
-                margin-bottom: 10px;
-            }
-            .action-btn {
-                padding: 6px 10px;
-                margin-right: 5px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            .approve {
-                background-color: #28a745;
-                color: white;
-            }
-            .deny {
-                background-color: #dc3545;
-                color: white;
-            }
-            .message { text-align: center; margin-top: 20px; }
-        </style>
-    </head>
-    <body>
-        <header>
-          <h1>Manage Appointments</h1>
-        </header>
-        <main>
-            <table id="appointmentsTable">
-                <thead>
-                <tr>
-                    <th>Appointment ID</th>
-                    <th>Patient ID</th>
-                    <th>Doctor ID</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                <!-- Appointment rows will be inserted here -->
-                </tbody>
-            </table>
-            <div class="message" id="message"></div>
-        </main>
-        
-        <script>
-            // Load appointments for doctor view (e.g., all appointments assigned)
-            async function loadAppointments() {
-                try {
-                    const response = await fetch('/appointments/doctor');
-                    if (!response.ok) throw new Error('Failed to fetch appointments');
-                    const appointments = await response.json();
-                    const tableBody = document.querySelector("#appointmentsTable tbody");
-                    tableBody.innerHTML = "";
-                
-                    if (appointments.length === 0) {
-                        document.getElementById("message").textContent = "No appointments found.";
-                    } else {
-                        document.getElementById("message").textContent = "";
-                        appointments.forEach(appt => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${appt.ApptID}</td>
-                            <td>${appt.PatientID}</td>
-                            <td>${appt.DoctorID}</td>
-                            <td>${appt.ApptDate}</td>
-                            <td>${appt.ApptTime}</td>
-                            <td>${appt.Reason}</td>
-                            <td>${appt.Status}</td>
-                            <td>
-                            <button class="action-btn finished" onclick="updateStatus(${appt.ApptID}, 'Finished')">Confirm</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error loading appointments:", error);
-                    document.getElementById("message").textContent = "Error loading appointments.";
-                }
-            }
-            
-            // Update appointment status (confirm or deny)
-            async function updateStatus(apptID, newStatus) {
-                try {
-                const response = await fetch(`/appointments/${apptID}/status`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                if (!response.ok) throw new Error('Failed to update status');
-                    alert(`Appointment ${apptID} ${newStatus}`);
-                    loadAppointments();
-                } catch (error) {
-                    console.error("Error updating appointment status:", error);
-                    alert("Error updating appointment status.");
-                }
-            }
-            
-            // Initialize the page by loading appointments
-            window.onload = loadAppointments;
-        </script>
-    </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Appointments</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/exampleStyle.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: rgb(89, 77, 170);
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 38px;
+      margin: 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 90%;
+      margin: 20px auto;
+      background-color: white;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #594daa;
+      color: white;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 20px;
+      color: #555;
+      font-size: 1.1rem;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .finished {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .finished:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+    <header>
+      <h1>Healthcare System - Doctor Appointments</h1>
+      <nav class="horizonBlocks">
+        <ul>
+          <li><a href="../html/docHomepageExample.html">Dashboard</a></li>
+          <li><a href="../html/labs.html">Labs</a></li>
+          <li><a href="../html/records.html">My Records</a></li>
+          <li><a href="../html/doctorAppointments.html">Appointments</a></li>
+          <li><a href="./">Logout</a></li>
+        </ul>
+      </nav>
+    </header>
+  <main>
+    <table id="appointmentsTable">
+      <thead>
+        <tr>
+          <th>Appointment ID</th>
+          <th>Patient ID</th>
+          <th>Doctor ID</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Appointment rows will be inserted here -->
+      </tbody>
+    </table>
+    <div class="message" id="message"></div>
+  </main>
+
+  <script>
+    async function loadAppointments() {
+      try {
+        const response = await fetch('/appointments/doctor');
+        if (!response.ok) throw new Error('Failed to fetch appointments');
+        const appointments = await response.json();
+        const tableBody = document.querySelector("#appointmentsTable tbody");
+        tableBody.innerHTML = "";
+
+        if (appointments.length === 0) {
+          document.getElementById("message").textContent = "No appointments found.";
+        } else {
+          document.getElementById("message").textContent = "";
+
+          appointments.forEach(appt => {
+            const date = new Date(appt.ApptDate);
+            const formattedDate = date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            });
+
+            const timeString = `${appt.ApptDate.split('T')[0]}T${appt.ApptTime}`;
+            const time = new Date(timeString);
+            const formattedTime = time.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            });
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${appt.ApptID}</td>
+              <td>${appt.PatientID}</td>
+              <td>${appt.DoctorID ?? 'Not Assigned'}</td>
+              <td>${formattedDate}</td>
+              <td>${formattedTime}</td>
+              <td>${appt.Reason}</td>
+              <td>${appt.Status}</td>
+              <td>
+                <button class="action-btn finished" onclick="updateStatus(${appt.ApptID}, 'Finished')">Mark Finished</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+        document.getElementById("message").textContent = "Error loading appointments.";
+      }
+    }
+
+    async function updateStatus(apptID, newStatus) {
+      try {
+        const response = await fetch(`/appointments/${apptID}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (!response.ok) throw new Error('Failed to update status');
+
+        alert(`Appointment ${apptID} marked as ${newStatus}.`);
+        loadAppointments();
+      } catch (error) {
+        console.error("Error updating appointment status:", error);
+        alert("Error updating appointment status.");
+      }
+    }
+
+    window.onload = loadAppointments;
+  </script>
+</body>
 </html>

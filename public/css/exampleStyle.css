@@ -47,6 +47,10 @@ header h1{
     text-align: center;
 }
 
+header nav.horizonBlocks ul {
+    padding-inline-start: 0px;
+}
+
 header nav.horizonBlocks ul li{
     background-color: darkgrey;
     display: inline;

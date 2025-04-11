@@ -6,58 +6,90 @@
         <link rel="stylesheet" href="../css/styles.css">
         <link rel="stylesheet" href="../css/exampleStyle.css">
         <style>
-            /* Global body styles */
             body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                min-height: 100vh;
-                display: block;
+              margin: 0;
+              padding: 0;
+              font-family: Arial, sans-serif;
+              background-color: #f4f4f4;
+              min-height: 100vh;
             }
-    
-            /* Header styles */
+        
             header {
-                width: 100%;
-                background-color: rgb(89, 77, 170);
-                color: white;
-                padding: 10px 0;
-                text-align: center;
+              background-color: rgb(89, 77, 170);
+              color: white;
+              padding: 10px 0;
+              text-align: center;
             }
-    
+        
             header h1 {
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 38px;
-                margin: 0;
+              font-size: 38px;
+              margin: 0;
             }
-            
-            /* Basic styling for table and form */
+        
             table {
-                border-collapse: collapse;
-                width: 80%;
-                margin: 20px auto;
+              border-collapse: collapse;
+              width: 90%;
+              margin: 20px auto;
+              background-color: white;
             }
+        
             th, td {
-                padding: 8px 12px;
-                border: 1px solid #ccc;
+              padding: 10px 14px;
+              border: 1px solid #ccc;
+              text-align: center;
             }
-            form {
-                width: 300px;
-                margin: 20px auto;
-                display: flex;
-                flex-direction: column;
+        
+            th {
+              background-color: #594daa;
+              color: white;
             }
-            label {
-                margin-bottom: 5px;
+        
+            .message {
+              text-align: center;
+              margin-top: 20px;
+              color: #555;
+              font-size: 1.1rem;
             }
-            input, select, button {
-                margin-bottom: 10px;
+        
+            .action-btn {
+              padding: 6px 12px;
+              margin: 0 2px;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: bold;
+              color: white;
             }
-        </style>
+        
+            .approve {
+              background-color: #28a745;
+            }
+        
+            .approve:hover {
+              background-color: #1e7e34;
+            }
+        
+            .deny {
+              background-color: #dc3545;
+            }
+        
+            .deny:hover {
+              background-color: #a71d2a;
+            }
+          </style>
     </head>
     <body>
         <header>
-          <h1>Manage Appointments</h1>
+          <h1>Healthcare System - Doctor Appointments</h1>
+          <nav class="horizonBlocks">
+            <ul>
+              <li><a href="../html/docHomepageExample.html">Dashboard</a></li>
+              <li><a href="../html/labs.html">Labs</a></li>
+              <li><a href="../html/records.html">My Records</a></li>
+              <li><a href="../html/doctorAppointments.html">Appointments</a></li>
+              <li><a href="./">Logout</a></li>
+            </ul>
+          </nav>
         </header>
         <main>
             <table id="appointmentsTable">
@@ -79,12 +111,11 @@
             </table>
             <div class="message" id="message"></div>
         </main>
-        
         <script>
             // Load appointments for doctor view (e.g., all assigned appointments)
             async function loadAppointments() {
                 try {
-                    const response = await fetch('/appointments/doctor');
+                    const response = await fetch('/appointments/doctor/noStatus');
                     if (!response.ok) throw new Error('Failed to fetch appointments');
                     const appointments = await response.json();
                     const tableBody = document.querySelector("#appointmentsTable tbody");
@@ -95,13 +126,31 @@
                     } else {
                         document.getElementById("message").textContent = "";
                         appointments.forEach(appt => {
+                            // Format the date nicely (e.g., "Sep 11, 2001")
+                            const date = new Date(appt.ApptDate);
+                            const formattedDate = date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+
+                            
+                            // Combine date and time for accurate formatting (e.g. "8:46 AM")
+                            const timeString = `${appt.ApptDate.split('T')[0]}T${appt.ApptTime}`;
+                            const time = new Date(timeString);
+                            const formattedTime = time.toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                            });
+
                             const row = document.createElement("tr");
                             row.innerHTML = `
                                 <td>${appt.ApptID}</td>
                                 <td>${appt.PatientID}</td>
                                 <td>${appt.DoctorID ? appt.DoctorID : 'Not Assigned'}</td>
-                                <td>${appt.ApptDate}</td>
-                                <td>${appt.ApptTime}</td>
+                                <td>${formattedDate}</td>
+                                <td>${formattedTime}</td>
                                 <td>${appt.Reason}</td>
                                 <td>${appt.Status}</td>
                                 <td>
