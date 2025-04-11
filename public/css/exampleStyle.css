@@ -31,37 +31,63 @@ body{
     border-radius: 15px;
 }
 
-/*header styling */
-header{
-    background-color: rgb(89,77,170);
+/* Header styles */
+header {
+    background-color: rgb(89, 77, 170);
     color: white;
-    position: absolute;
-    top:0px;
-    padding-bottom: 0%;
+    /* Remove any `position:absolute;` or `position:fixed;` lines */
+    /* e.g. position: static; (static is the default) */
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
 }
 
-
-header h1{
+header h1 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 38px;
-    text-align: center;
+    margin: 0;
 }
 
-header nav.horizonBlocks ul li{
-    background-color: darkgrey;
+/* Basic styling for table and form */
+table {
+    border-collapse: collapse;
+    width: 80%;
+    margin: 20px auto;
+}
+main {
+    margin: 0;
+    padding: 0 20px;
+}
+
+nav.horizonBlocks ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+nav.horizonBlocks li {
+    margin: 0 10px;
+    background-color: #307;
     display: inline;
     border-radius: 5px;
     padding: 12px 26px;
     box-shadow: 2px 2px 7px 1px #1C6EA4;
 }
-
-
-header nav.horizonBlocks ul li:hover{
-    background-color: slategray;
+nav.horizonBlocks li:hover {
+    margin: 0 10px;
+    background-color: #60b;
+    display: inline;
+    border-radius: 5px;
+    box-shadow: 2px 2px 7px 1px #1C6EA4;
+}
+nav.horizonBlocks a {
+    color: white;
+    text-decoration: none;
+    padding: 5px;
 }
 
 /*sidebar styling*/
-
 .sidebar{
     position: absolute;
     width: 12%;
