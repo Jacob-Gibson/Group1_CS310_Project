@@ -76,10 +76,7 @@
         <ul>
             <li><a href="#">Dashboard</a></li>
             <li><a href="../html/calendar.html">My Calendar</a></li>
-            <li><a href="../html/labs.html">Labs</a></li>
             <li><a href="../html/records.html">Patient Records</a></li>
-            <li><a href="../html/doctorAppointments.html">Upcoming Appointments</a></li>
-            <li><a href="../html/doctorAppointmentConfirmation.html">Incoming Appointments</a></li>
             <li><a href="./">Logout</a></li>
         </ul>
     </nav>
@@ -89,11 +86,11 @@
     <h4>Page Links</h4>
     <hr>
     <ul>
-        <li><a href="#">Example</a></li>
+        <li><a href="../html/doctorPrescriptions.html">Manage Prescriptions</a></li>
         <hr>
-        <li><a href="#">Example</a></li>
+        <li><a href="../html/doctorAppointments.html">Upcoming Appointments</a></li>
         <hr>
-        <li><a href="#">Example</a></li>
+        <li><a href="../html/doctorAppointmentConfirmation.html">Incoming Appointments</a></li>
     </ul>
 </div>
 
@@ -191,14 +188,6 @@
         const messageElement = document.createElement("div");
         messageElement.textContent = `${sender}: ${messageText}`;
         messagesContainer.appendChild(messageElement);
-    });
-    <a href="/doctorPrescriptions">
-        <button>Manage Prescriptions</button>
-    </a>
-
-    function toggleChat() {
-        const chatBox = document.getElementById("chatBoxContainer");
-        chatBox.classList.toggle("open");
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
