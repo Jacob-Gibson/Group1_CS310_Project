@@ -79,12 +79,11 @@
             </table>
             <div class="message" id="message"></div>
         </main>
-        
         <script>
             // Load appointments for doctor view (e.g., all assigned appointments)
             async function loadAppointments() {
                 try {
-                    const response = await fetch('/appointments/doctor');
+                    const response = await fetch('/appointments/doctor/noStatus');
                     if (!response.ok) throw new Error('Failed to fetch appointments');
                     const appointments = await response.json();
                     const tableBody = document.querySelector("#appointmentsTable tbody");

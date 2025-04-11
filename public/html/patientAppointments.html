@@ -1,130 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Manage Appointments</title>
-        <link rel="stylesheet" href="../css/styles.css">
-        <link rel="stylesheet" href="../css/exampleStyle.css">
-        <style>
-            /* Global body styles */
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                min-height: 100vh;
-                display: block;
-            }
-    
-            /* Header styles */
-            header {
-                width: 100%;
-                background-color: rgb(89, 77, 170);
-                color: white;
-                padding: 10px 0;
-                text-align: center;
-            }
-    
-            header h1 {
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 38px;
-                margin: 0;
-            }
-            
-            /* Basic styling for table and form */
-            table {
-                border-collapse: collapse;
-                width: 80%;
-                margin: 20px auto;
-            }
-            th, td {
-                padding: 8px 12px;
-                border: 1px solid #ccc;
-            }
-            form {
-                width: 300px;
-                margin: 20px auto;
-                display: flex;
-                flex-direction: column;
-            }
-            label {
-                margin-bottom: 5px;
-            }
-            input, select, button {
-                margin-bottom: 10px;
-            }
-        </style>
-    </head>
-    <body>
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Appointments</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/exampleStyle.css">
+  <style>
+    /* Global body styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      min-height: 100vh;
+      display: block; /* default anyway, but fine to keep */
+    }
+    /* Header styles */
+    header {
+        background-color: rgb(89, 77, 170);
+        color: white;
+        padding: 10px 0;
+        text-align: center;
+        width: 100%;
+    }
 
-        <header>
-            <h1>Healthcare System - Patient Appointments</h1>
-            <nav class="horizonBlocks">
-                <ul>
-                    <li><a href="../html/patientHomepageExample.html">Dashboard</a></li>
-                    <li><a href="../html/calendar.html">My Calendar</a></li>
-                    <li><a href="../html/records.html">My Records</a></li>
-                    <li><a href="./">Logout</a></li>
-                </ul>
-            </nav>
-        </header>
-        <main>
-            <!-- This is just plain text for now, not making it fancy since it's a prototype -->
-            <div class="btn-container">
-                <a class="btn" href="./requestAppointments.html">Create Appointment</a>
-            </div>
-            <table id="appointmentsTable">
-                <thead>
-                    <tr>
-                        <th>Appointment ID</th>
-                        <th>Doctor ID</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Appointments will be populated here by script -->
-                </tbody>
-            </table>
-          </main>
-          <script>
-            // Fetch and display appointments for the current patient
-            async function loadAppointments() {
-                try {
-                    const response = await fetch('/appointments/patient');
-                    if (!response.ok) throw new Error('Failed to fetch appointments');
-            
-                    const appointments = await response.json();
-                    const tableBody = document.querySelector("#appointmentsTable tbody");
-                    tableBody.innerHTML = ""; // Clear any previous rows
-            
-                    if (appointments.length === 0) {
-                        document.getElementById("message").textContent = "No appointments found.";
-                    } else {
-                        document.getElementById("message").textContent = "";
-                        appointments.forEach(appt => {
-                            const row = document.createElement("tr");
-                            row.innerHTML = `
-                            <td>${appt.ApptID}</td>
-                            <td>${appt.DoctorID ? appt.DoctorID : 'Not Assigned'}</td>
-                            <td>${appt.ApptDate}</td>
-                            <td>${appt.ApptTime}</td>
-                            <td>${appt.Reason}</td>
-                            <td>${appt.Status}</td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error loading appointments:", error);
-                    document.getElementById("message").textContent = "Error loading appointments.";
-                }
-            }
-          
-            // Initialize the page: load appointments
-            window.onload = loadAppointments;
-          </script>
-    </body>
+    header h1 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 38px;
+      margin: 0;
+    }
+
+    /* Basic styling for table and form */
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: 20px auto;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+    }
+
+    .btn-container {
+      width: 80%;
+      margin: 20px auto; /* ensures spacing between button and table */
+      text-align: center;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 12px;
+      text-decoration: none;
+      background-color: #ccc;
+      border: 1px solid #888;
+      border-radius: 4px;
+    }
+
+    main {
+      margin: 0;
+      padding: 0 20px;
+    }
+
+    nav.horizonBlocks ul {
+      display: flex;
+      justify-content: center;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    nav.horizonBlocks li {
+      margin: 0 10px;
+    }
+    nav.horizonBlocks a {
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Healthcare System - Patient Appointments</h1>
+    <nav class="horizonBlocks">
+      <ul>
+        <li><a href="../html/patientHomepageExample.html">Dashboard</a></li>
+        <li><a href="../html/calendar.html">My Calendar</a></li>
+        <li><a href="../html/labs.html">Labs</a></li>
+        <li><a href="../html/records.html">My Records</a></li>
+        <li><a href="../html/patientAppointments.html">Appointments</a></li>
+        <li><a href="./">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="btn-container">
+      <a class="btn" href="./requestAppointments.html">Create Appointment</a>
+    </div>
+
+    <table id="appointmentsTable">
+      <thead>
+        <tr>
+          <th>Appointment ID</th>
+          <th>Doctor ID</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Reason</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Appointments will be populated here by script -->
+      </tbody>
+    </table>
+
+    <!-- Provide a place for any messages if needed -->
+    <div id="message" style="text-align: center; color: red;"></div>
+  </main>
+
+  <script>
+    // Fetch and display appointments for the current patient
+    async function loadAppointments() {
+      try {
+        const response = await fetch('/appointments/patient');
+        if (!response.ok) throw new Error('Failed to fetch appointments');
+
+        const appointments = await response.json();
+        const tableBody = document.querySelector("#appointmentsTable tbody");
+        tableBody.innerHTML = ""; // Clear any previous rows
+
+        if (appointments.length === 0) {
+          document.getElementById("message").textContent = "No appointments found.";
+        } else {
+          document.getElementById("message").textContent = "";
+          appointments.forEach(appt => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${appt.ApptID}</td>
+              <td>${appt.DoctorID ? appt.DoctorID : 'Not Assigned'}</td>
+              <td>${appt.ApptDate}</td>
+              <td>${appt.ApptTime}</td>
+              <td>${appt.Reason}</td>
+              <td>${appt.Status}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+      }
+    }
+
+    // Initialize the page: load appointments
+    window.onload = loadAppointments;
+  </script>
+</body>
 </html>
