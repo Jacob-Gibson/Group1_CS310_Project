@@ -550,8 +550,69 @@ app.put('/appointments/:apptID/status', (req, res) => {
     });
 });
 
+// Some code to update the schema in case they use an outdated one, does add some bulk (settings table)
+function ensureSchemaUpdated() {
+    return new Promise((resolve, reject) => {
+        const createSettingsTable = `
+            CREATE TABLE IF NOT EXISTS settings (
+                name VARCHAR(100) PRIMARY KEY,
+                value VARCHAR(255)
+            );
+        `;
 
-// Start the server
-server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
+        // Ensure the settings table exists
+        connection.query(createSettingsTable, (err) => {
+            if (err) return reject(err);
+
+            // Check if the enum update has already been done
+            const checkSql = `SELECT value FROM settings WHERE name = 'appointments_enum_updated'`;
+
+            connection.query(checkSql, (err, results) => {
+                if (err) return reject(err);
+
+                if (results.length > 0 && results[0].value === 'true') {
+                    return resolve(false); // Already updated
+                }
+
+                // Perform the ALTER TABLE
+                const alterSql = `
+                    ALTER TABLE appointments
+                    MODIFY COLUMN Status ENUM('Pending', 'Approved', 'Rejected', 'Finished') NOT NULL DEFAULT 'Pending';
+                `;
+
+                connection.query(alterSql, (alterErr) => {
+                    if (alterErr) return reject(alterErr);
+
+                    // Set the flag in settings table
+                    const insertSql = `
+                        INSERT INTO settings (name, value)
+                        VALUES ('appointments_enum_updated', 'true')
+                        ON DUPLICATE KEY UPDATE value = 'true';
+                    `;
+
+                    connection.query(insertSql, (insertErr) => {
+                        if (insertErr) return reject(insertErr);
+                        resolve(true);
+                    });
+                });
+            });
+        });
+    });
+}
+
+ensureSchemaUpdated()
+    .then((updated) => {
+        if (updated) {
+            console.log('Appointment status enum column updated');
+        } else {
+            console.log('Appointment status enum already up to date');
+        }
+
+        server.listen(port, () => {
+            console.log(`Server running on http://localhost:${port}`);
+        });
+    })
+    .catch((err) => {
+        console.error('Failed to ensure schema update:', err);
+        process.exit(1); // Exit if migration failed
+    });
