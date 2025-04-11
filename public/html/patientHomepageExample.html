@@ -116,21 +116,13 @@
         <ul>
             <li><a href="../html/patientHomepageExample.html">Dashboard</a></li>
             <li><a href="../html/calendar.html">My Calendar</a></li>
+            <li><a href="../html/labs.html">Labs</a></li>
             <li><a href="../html/records.html">My Records</a></li>
+            <li><a href="../html/patientAppointments.html">Appointments</a></li>
             <li><a href="./">Logout</a></li>
         </ul>
     </nav>
 </header>
-
-<div class="sidebar">
-    <h4>Page Links</h4>
-    <hr>
-    <ul>
-        <li><a href="../html/patientPrescriptions.html">View Prescriptions</a></li>
-        <hr>
-        <li><a href="../html/patientAppointments.html">Appointments</a></li>
-    </ul>
-</div>
 
 <h1 class="blurb">Welcome to your patient dashboard</h1>
 
@@ -183,7 +175,7 @@
         }
     }
 
-    // Load previous messages between the current user and the selected user
+    // Load previous messages between users
     async function loadMessages() {
         try {
             otherUserID = document.getElementById("userSelect").value;
@@ -192,9 +184,8 @@
             const messagesContainer = document.getElementById("messages");
             messagesContainer.innerHTML = "";
             messages.forEach(message => {
-                const formattedTime = new Date(message.Timestamp).toLocaleTimeString();
                 const messageElement = document.createElement("div");
-                messageElement.textContent = `[${formattedTime}] ${message.SenderID === currentUserID ? 'You' : 'Them'}: ${message.MessageText}`;
+                messageElement.textContent = `${message.SenderID === currentUserID ? 'You' : 'Them'}: ${message.MessageText}`;
                 messagesContainer.appendChild(messageElement);
             });
         } catch (error) {
@@ -207,12 +198,7 @@
         const messageText = document.getElementById("messageInput").value;
         if (!messageText.trim() || !otherUserID) return;
 
-        const messageData = {
-            senderID: currentUserID,
-            receiverID: otherUserID,
-            messageText
-        };
-
+        const messageData = { senderID: currentUserID, receiverID: otherUserID, messageText };
         socket.emit('sendMessage', messageData);
         displayMessage("You", messageText);
         document.getElementById("messageInput").value = '';
@@ -224,10 +210,18 @@
         const messageElement = document.createElement("div");
         messageElement.textContent = `${sender}: ${messageText}`;
         messagesContainer.appendChild(messageElement);
+    });
+<a href="/patientPrescriptions">
+    <button>View Prescriptions</button>
+</a>
+
+    function toggleChat() {
+        const chatBox = document.getElementById("chatBoxContainer");
+        chatBox.classList.toggle("open");
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Listen for incoming messages from the server
+    // Receive messages
     socket.on('receiveMessage', (messageData) => {
         const sender = (messageData.senderID === currentUserID) ? "You" : "Them";
         displayMessage(sender, messageData.messageText);
