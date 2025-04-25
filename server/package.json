@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "setup": "npm install express mysql2 http socket.io path express-session"
   },
   "private": true,
@@ -17,5 +17,8 @@
     "mysql2": "^3.14.0",
     "path": "^0.12.7",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

@@ -441,178 +441,92 @@ app.get('/patients', (req, res) => {
     });
 });
 
+const {
+    ensureSchemaUpdated,
+    createAppointment,
+    getAppointmentsByPatient,
+    getDoctorAppointmentsActive,
+    getDoctorAppointmentsPending,
+    updateAppointmentStatus,
+} = require('./helper-functions');
+
 // Appointment routes
-app.post('/appointments/patient/request', (req, res) => {
-    const { apptDate, apptTime, reason } = req.body;
-    const patientID = req.session.userID; // Make sure your session stores an object with patientID
-    const status = 'Pending';  // Force default status for patient submissions
-    const doctorID = null;     // No doctor assigned yet
-  
-    const sql = `
-      INSERT INTO appointments
-        (PatientID, DoctorID, ApptDate, ApptTime, Reason, Status, CreatedAt, UpdatedAt, NurseID)
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)
-    `;
-    // 6 placeholders => 6 values in the array
-    const values = [patientID, doctorID, apptDate, apptTime, reason, status];
-  
-    connection.query(sql, values, (error, result) => {
-      if (error) {
-        console.error('Error creating appointment:', error);
-        return res.status(500).json({ error: 'Failed to create appointment' });
-      }
-      // result.insertId should have the new appointment ID
-      res.json({ message: 'Appointment request submitted', ApptID: result.insertId });
+ensureSchemaUpdated(connection)
+    .then(() => connection.connect())
+    .catch(err => {
+        console.error('Schema update failed:', err);
+        process.exit(1);
     });
-});
-  
-  // GET appointments for a patient
-app.get('/appointments/patient', (req, res) => {
-    const patientID = req.session.userID;
-    connection.query(
-        'SELECT * FROM appointments WHERE PatientID = ?',
-        [patientID],
-        (err, rows) => {
-            if (err) {
-            console.error('Error fetching appointments for patient:', err);
-            return res.status(500).json({ error: 'Failed to fetch appointments' });
-            }
-            res.json(rows);
-        }
-    );
+
+app.post('/appointments/patient/request', async (req, res) => {
+    try {
+        const apptID = await createAppointment({
+            connection,
+            patientID: req.session.userID,
+            apptDate: req.body.apptDate,
+            apptTime: req.body.apptTime,
+            reason: req.body.reason,
+        });
+        res.json({ message: 'Appointment request submitted', apptID });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to create appointment' });
+    }
 });
 
-// GET appointments for a doctor (excluding Pending/Finished)
-app.get('/appointments/doctor', (req, res) => {
-    const DoctorID = req.session.userID;
-    const sql = `
-    SELECT *
-    FROM appointments
-    WHERE DoctorID = ?
-        AND Status <> 'Pending'
-        AND Status <> 'Finished'
-        AND Status <> 'Rejected'
-    `;
-    connection.query(sql, [DoctorID], (err, rows) => {
-        if (err) {
-            console.error('Error fetching appointments for doctor:', err);
-            return res.status(500).json({ error: 'Failed to fetch appointments' });
-        }
+app.get('/appointments/patient', async (req, res) => {
+    try {
+        const rows = await getAppointmentsByPatient({ connection, patientID: req.session.userID });
         res.json(rows);
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
 });
 
-// GET appointments for a doctor that ARE Pending
-app.get('/appointments/doctor/noStatus', (req, res) => {
-    const DoctorID = req.session.userID;
-    const sql = `
-    SELECT *
-    FROM appointments
-    WHERE Status = 'Pending'
-    `;
-    connection.query(sql, [DoctorID], (err, rows) => {
-        if (err) {
-            console.error('Error fetching appointments for doctor:', err);
-            return res.status(500).json({ error: 'Failed to fetch appointments' });
-        }
+app.get('/appointments/doctor', async (req, res) => {
+    try {
+        const rows = await getDoctorAppointmentsActive({ connection, doctorID: req.session.userID });
         res.json(rows);
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
 });
-  
-app.put('/appointments/:apptID/status', (req, res) => {
-    // Destructure the route param
-    const { apptID } = req.params;
 
-    // Check if user is a doctor
+app.get('/appointments/doctor/noStatus', async (req, res) => {
+    try {
+        const rows = await getDoctorAppointmentsPending({ connection });
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+});
+
+app.put('/appointments/:apptID/status', async (req, res) => {
     if (req.session.roleID !== 2) {
-        console.error('User is not a doctor!');
         return res.status(403).json({ error: 'Forbidden - not a doctor' });
     }
 
-    const DoctorID = req.session.userID;
-    const { status } = req.body; // e.g. { status: "Approved" }
-
-    const sql = `
-        UPDATE appointments
-        SET Status = ?, UpdatedAt = NOW(), DoctorID = ?
-        WHERE ApptID = ?
-    `;
-
-    connection.query(sql, [status, DoctorID, apptID], (error, result) => {
-        if (error) {
-            console.error('Error updating appointment status:', error);
-            return res.status(500).json({ error: 'Failed to update appointment status' });
+    try {
+        await updateAppointmentStatus({
+            connection,
+            apptID: req.params.apptID,
+            doctorID: req.session.userID,
+            status: req.body.status,
+        });
+        res.json({ message: `Appointment status updated to ${req.body.status}` });
+    } catch (err) {
+        console.error(err);
+        if (err.message === 'NOT_FOUND') {
+            res.status(404).json({ error: 'Appointment not found' });
+        } else {
+            res.status(500).json({ error: 'Failed to update appointment status' });
         }
-        if (result.affectedRows === 0) {
-        return res.status(404).json({ error: 'Appointment not found' });
-        }
-        res.json({ message: `Appointment status updated to ${status}` });
-    });
+    }
 });
 
-// Some code to update the schema in case they use an outdated one, does add some bulk (settings table)
-function ensureSchemaUpdated() {
-    return new Promise((resolve, reject) => {
-        const createSettingsTable = `
-            CREATE TABLE IF NOT EXISTS settings (
-                name VARCHAR(100) PRIMARY KEY,
-                value VARCHAR(255)
-            );
-        `;
-
-        // Ensure the settings table exists
-        connection.query(createSettingsTable, (err) => {
-            if (err) return reject(err);
-
-            // Check if the enum update has already been done
-            const checkSql = `SELECT value FROM settings WHERE name = 'appointments_enum_updated'`;
-
-            connection.query(checkSql, (err, results) => {
-                if (err) return reject(err);
-
-                if (results.length > 0 && results[0].value === 'true') {
-                    return resolve(false); // Already updated
-                }
-
-                // Perform the ALTER TABLE
-                const alterSql = `
-                    ALTER TABLE appointments
-                    MODIFY COLUMN Status ENUM('Pending', 'Approved', 'Rejected', 'Finished') NOT NULL DEFAULT 'Pending';
-                `;
-
-                connection.query(alterSql, (alterErr) => {
-                    if (alterErr) return reject(alterErr);
-
-                    // Set the flag in settings table
-                    const insertSql = `
-                        INSERT INTO settings (name, value)
-                        VALUES ('appointments_enum_updated', 'true')
-                        ON DUPLICATE KEY UPDATE value = 'true';
-                    `;
-
-                    connection.query(insertSql, (insertErr) => {
-                        if (insertErr) return reject(insertErr);
-                        resolve(true);
-                    });
-                });
-            });
-        });
-    });
-}
-
-ensureSchemaUpdated()
-    .then((updated) => {
-        if (updated) {
-            console.log('Appointment status enum column updated');
-        } else {
-            console.log('Appointment status enum already up to date');
-        }
-
-        server.listen(port, () => {
-            console.log(`Server running on http://localhost:${port}`);
-        });
-    })
-    .catch((err) => {
-        console.error('Failed to ensure schema update:', err);
-        process.exit(1); // Exit if migration failed
-    });
+server.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+});
